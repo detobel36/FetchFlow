@@ -72,7 +72,7 @@ for item in results:
 To run all unit and integration tests:
 
 ```bash
-PYTHONPATH=. python -m pytest
+PYTHONPATH=. .venv/bin/python -m pytest
 ```
 
 ## Code of Conduct

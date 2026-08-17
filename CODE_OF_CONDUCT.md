@@ -18,7 +18,7 @@ python -m pip install ruff
 Run the automated test suite:
 
 ```bash
-PYTHONPATH=. python -m pytest
+PYTHONPATH=. .venv/bin/python -m pytest
 ```
 
 Run the linter:

@@ -1,4 +1,5 @@
 import json
+from os import PathLike
 from pathlib import Path
 from typing import Any
 
@@ -139,10 +140,10 @@ class ConfigLoader:
         return ConfigLoader.load_from_dict(data)
 
     @staticmethod
-    def load_from_file(filepath: str) -> dict[str, Any]:
+    def load_from_file(filepath: str | PathLike[str]) -> dict[str, Any]:
         """Load and validate a scraper configuration from a JSON file."""
         try:
-            with Path.open(filepath, encoding="utf-8") as f:
+            with Path(filepath).open(encoding="utf-8") as f:
                 data = json.load(f)
         except FileNotFoundError as e:
             msg = f"Configuration file not found: {filepath}"

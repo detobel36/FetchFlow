@@ -1,3 +1,4 @@
+from os import PathLike
 from typing import Any
 
 from scraper_engine.config import ConfigLoader
@@ -10,7 +11,7 @@ class Scraper:
 
     def __init__(
         self,
-        config: dict[str, Any] | str,
+        config: dict[str, Any] | str | PathLike[str],
         http_client: HTTPClient | None = None,
     ) -> None:
         """Init.
@@ -24,6 +25,8 @@ class Scraper:
                 self.config = ConfigLoader.load_from_json(config)
             else:
                 self.config = ConfigLoader.load_from_file(config)
+        elif isinstance(config, PathLike):
+            self.config = ConfigLoader.load_from_file(config)
         elif isinstance(config, dict):
             self.config = ConfigLoader.load_from_dict(config)
         else:

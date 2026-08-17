@@ -35,9 +35,12 @@ def main(args: list[str] | None = None) -> int:
         output_data = json.dumps(results, indent=parsed_args.indent, ensure_ascii=False)
 
         if parsed_args.output:
-            with Path.open(parsed_args.output, "w", encoding="utf-8") as f:
+            with Path(parsed_args.output).open("w", encoding="utf-8") as f:
                 f.write(output_data)
                 f.write("\n")
+        else:
+            sys.stdout.write(output_data)
+            sys.stdout.write("\n")
     except ScraperEngineError as e:
         sys.stderr.write(f"Error executing scraper: {e}\n")
         return 1
