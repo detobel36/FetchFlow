@@ -1,10 +1,13 @@
 import json
+from os import PathLike
+from pathlib import Path
+from typing import Any
+
 import jsonschema
-from typing import Any, Dict, Union
 
 from scraper_engine.errors import ConfigValidationError
 
-SCRAPER_CONFIG_SCHEMA: Dict[str, Any] = {
+SCRAPER_CONFIG_SCHEMA: dict[str, Any] = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ScraperConfig",
     "type": "object",
@@ -14,13 +17,13 @@ SCRAPER_CONFIG_SCHEMA: Dict[str, Any] = {
         "version": {"type": "string"},
         "variables": {
             "type": "object",
-            "additionalProperties": {"type": "string"}
+            "additionalProperties": {"type": "string"},
         },
         "steps": {
             "type": "array",
             "minItems": 1,
-            "items": {"$ref": "#/definitions/step"}
-        }
+            "items": {"$ref": "#/definitions/step"},
+        },
     },
     "additionalProperties": False,
     "definitions": {
@@ -34,19 +37,19 @@ SCRAPER_CONFIG_SCHEMA: Dict[str, Any] = {
                 "extract": {"$ref": "#/definitions/extract"},
                 "fields": {
                     "type": "object",
-                    "additionalProperties": {"$ref": "#/definitions/field"}
-                }
+                    "additionalProperties": {"$ref": "#/definitions/field"},
+                },
             },
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "for_each": {
             "type": "object",
             "required": ["from"],
             "properties": {
                 "from": {"type": "string"},
-                "field": {"type": "string"}
+                "field": {"type": "string"},
             },
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "request": {
             "type": "object",
@@ -56,23 +59,23 @@ SCRAPER_CONFIG_SCHEMA: Dict[str, Any] = {
                 "url": {"type": "string"},
                 "headers": {
                     "type": "object",
-                    "additionalProperties": {"type": "string"}
+                    "additionalProperties": {"type": "string"},
                 },
                 "params": {
                     "type": "object",
-                    "additionalProperties": {"type": "string"}
-                }
+                    "additionalProperties": {"type": "string"},
+                },
             },
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "extract": {
             "type": "object",
             "required": ["selector"],
             "properties": {
                 "selector": {"type": "string"},
-                "selector_type": {"type": "string", "enum": ["css", "xpath"], "default": "css"}
+                "selector_type": {"type": "string", "enum": ["css", "xpath"], "default": "css"},
             },
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "field": {
             "type": "object",
@@ -87,14 +90,14 @@ SCRAPER_CONFIG_SCHEMA: Dict[str, Any] = {
                     "items": {
                         "oneOf": [
                             {"type": "string"},
-                            {"type": "object"}
-                        ]
-                    }
-                }
+                            {"type": "object"},
+                        ],
+                    },
+                },
             },
-            "additionalProperties": False
-        }
-    }
+            "additionalProperties": False,
+        },
+    },
 }
 
 
@@ -102,7 +105,8 @@ class ConfigValidator:
     """Validates scraper configuration against JSON schema."""
 
     @staticmethod
-    def validate(config: Dict[str, Any]) -> None:
+    def validate(config: dict[str, Any]) -> None:
+        """Validate the scraper configuration against the schema."""
         validator = jsonschema.Draft7Validator(SCRAPER_CONFIG_SCHEMA)
         errors = list(validator.iter_errors(config))
         if errors:
@@ -112,7 +116,7 @@ class ConfigValidator:
                 error_messages.append(f"{path}: {err.message}")
             raise ConfigValidationError(
                 f"Configuration validation failed with {len(errors)} error(s):\n" + "\n".join(error_messages),
-                errors=error_messages
+                errors=error_messages,
             )
 
 
@@ -120,25 +124,31 @@ class ConfigLoader:
     """Loads and validates JSON scraper configurations."""
 
     @staticmethod
-    def load_from_dict(config_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def load_from_dict(config_dict: dict[str, Any]) -> dict[str, Any]:
+        """Load and validate a scraper configuration from a dictionary."""
         ConfigValidator.validate(config_dict)
         return config_dict
 
     @staticmethod
-    def load_from_json(json_str: str) -> Dict[str, Any]:
+    def load_from_json(json_str: str) -> dict[str, Any]:
+        """Load and validate a scraper configuration from a JSON string."""
         try:
             data = json.loads(json_str)
         except json.JSONDecodeError as e:
-            raise ConfigValidationError(f"Invalid JSON format: {e}")
+            msg = f"Invalid JSON format: {e}"
+            raise ConfigValidationError(msg) from e
         return ConfigLoader.load_from_dict(data)
 
     @staticmethod
-    def load_from_file(filepath: str) -> Dict[str, Any]:
+    def load_from_file(filepath: str | PathLike[str]) -> dict[str, Any]:
+        """Load and validate a scraper configuration from a JSON file."""
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
+            with Path(filepath).open(encoding="utf-8") as f:
                 data = json.load(f)
-        except FileNotFoundError:
-            raise ConfigValidationError(f"Configuration file not found: {filepath}")
+        except FileNotFoundError as e:
+            msg = f"Configuration file not found: {filepath}"
+            raise ConfigValidationError(msg) from e
         except json.JSONDecodeError as e:
-            raise ConfigValidationError(f"Invalid JSON in configuration file '{filepath}': {e}")
+            msg = f"Invalid JSON in configuration file '{filepath}': {e}"
+            raise ConfigValidationError(msg) from e
         return ConfigLoader.load_from_dict(data)

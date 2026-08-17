@@ -1,27 +1,31 @@
 import json
-from unittest.mock import patch, MagicMock
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from scraper_engine.cli import main
 from scraper_engine.http import HTTPResponse
 
 
-def test_cli_stdout(capsys):
+def test_cli_stdout(capsys: pytest.CaptureFixture[str]):
     config = {
         "name": "test_cli",
         "steps": [
             {
                 "id": "step1",
                 "request": {
-                    "url": "https://example.com"
+                    "url": "https://example.com",
                 },
                 "fields": {
                     "title": {
                         "selector": "h1",
                         "selector_type": "css",
-                        "type": "text"
-                    }
-                }
-            }
-        ]
+                        "type": "text",
+                    },
+                },
+            },
+        ],
     }
     json_str = json.dumps(config)
 
@@ -35,24 +39,24 @@ def test_cli_stdout(capsys):
         assert data == [{"title": "Test Title"}]
 
 
-def test_cli_output_file(tmp_path):
+def test_cli_output_file(tmp_path: Path):
     config = {
         "name": "test_cli_file",
         "steps": [
             {
                 "id": "step1",
                 "request": {
-                    "url": "https://example.com"
+                    "url": "https://example.com",
                 },
                 "fields": {
                     "title": {
                         "selector": "h1",
                         "selector_type": "css",
-                        "type": "text"
-                    }
-                }
-            }
-        ]
+                        "type": "text",
+                    },
+                },
+            },
+        ],
     }
     config_file = tmp_path / "config.json"
     config_file.write_text(json.dumps(config))
@@ -68,7 +72,7 @@ def test_cli_output_file(tmp_path):
         assert data == [{"title": "Test Title"}]
 
 
-def test_cli_invalid_config(capsys):
+def test_cli_invalid_config(capsys: pytest.CaptureFixture[str]):
     exit_code = main(["{invalid_json}"])
     assert exit_code == 1
     captured = capsys.readouterr()

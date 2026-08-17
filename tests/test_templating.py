@@ -1,6 +1,7 @@
 import pytest
-from scraper_engine.templating import TemplateRenderer
+
 from scraper_engine.errors import TemplateError
+from scraper_engine.templating import TemplateRenderer
 
 
 def test_template_render_simple():
@@ -26,10 +27,10 @@ def test_template_render_data_structures():
     ctx = {"domain": "example.com", "path": "api"}
     data = {
         "url": "https://{{domain}}/{{path}}",
-        "params": ["{{domain}}", 42, True]
+        "params": ["{{domain}}", 42, True],
     }
     rendered = TemplateRenderer.render_data(data, ctx)
     assert rendered == {
         "url": "https://example.com/api",
-        "params": ["example.com", 42, True]
+        "params": ["example.com", 42, True],
     }

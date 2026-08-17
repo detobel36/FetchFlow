@@ -1,70 +1,93 @@
-from typing import Dict, Type, Union, Any, List
+from typing import Any, ClassVar
 
 from scraper_engine.errors import TransformationError
 from scraper_engine.transforms.base import BaseTransformer
 from scraper_engine.transforms.builtin import (
-    TrimTransformer,
     LowerTransformer,
-    UpperTransformer,
+    RegexTransformer,
     ReplaceTransformer,
     SplitTransformer,
-    RegexTransformer,
+    TrimTransformer,
+    UpperTransformer,
 )
 
 
 class TransformerRegistry:
     """Registry for registering and creating transformers from JSON config."""
 
-    _transformers: Dict[str, Type[BaseTransformer]] = {}
+    _transformers: ClassVar[dict[str, type[BaseTransformer]]] = {}
 
     @classmethod
-    def register(cls, name: str, transformer_cls: Type[BaseTransformer]) -> None:
+    def register(cls, name: str, transformer_cls: type[BaseTransformer]) -> None:
+        """Register a transformer class by name."""
         cls._transformers[name] = transformer_cls
 
     @classmethod
-    def create(cls, spec: Union[str, Dict[str, Any]]) -> BaseTransformer:
-        """
-        Creates a transformer instance from a string name (e.g. "trim")
-        or a dict spec (e.g. {"replace": {"from": ",", "to": "."}} or {"regex": "([0-9]+)"}).
+    def _parse_spec(cls, spec: str | dict[str, Any]) -> tuple[str, dict[str, Any]]:
+        """Parse a spec into (name, kwargs).
+
+        Handles:
+        - String: simple transformer name (e.g., "trim")
+        - Dict with scalar value: e.g., {"split": ","} or {"regex": "pattern"}
+        - Dict with nested dict: e.g., {"replace": {"from": ",", "to": "."}}
         """
         if isinstance(spec, str):
-            name = spec
-            kwargs = {}
-        elif isinstance(spec, dict):
+            return spec, {}
+
+        if isinstance(spec, dict):
             if len(spec) != 1:
-                raise TransformationError(f"Transformer spec dict must contain exactly 1 key, got: {list(spec.keys())}")
-            name = list(spec.keys())[0]
-            val = spec[name]
-            if isinstance(val, dict):
-                # E.g. {"replace": {"from": ",", "to": "."}} -> mapped to replace constructor kwargs
-                kwargs = {}
-                for k, v in val.items():
-                    key = "from_str" if k == "from" else "to_str" if k == "to" else k
-                    kwargs[key] = v
-            elif isinstance(val, (str, int, float)):
-                # E.g. {"split": ","} or {"regex": "pattern"}
-                if name == "split":
-                    kwargs = {"delimiter": str(val)}
-                elif name == "regex":
-                    kwargs = {"pattern": str(val)}
-                else:
-                    kwargs = {"pattern" if name in ("regex",) else "value": str(val)}
-            else:
-                kwargs = {}
-        else:
-            raise TransformationError(f"Invalid transformer specification: {spec}")
+                msg = f"Transformer spec dict must contain exactly 1 key, got: {list(spec.keys())}"
+                raise TransformationError(msg)
+            name = next(iter(spec.keys()))
+            value = spec[name]
+            kwargs = cls._build_kwargs(name, value)
+            return name, kwargs
+
+        msg = f"Invalid transformer specification: {spec}"
+        raise TransformationError(msg)
+
+    @classmethod
+    def _build_kwargs(cls, name: str, value: Any) -> dict[str, Any]:  # noqa: ANN401
+        """Build constructor kwargs from a transformer name and value."""
+        if isinstance(value, dict):
+            # E.g. {"replace": {"from": ",", "to": "."}}
+            kwargs = {}
+            for k, v in value.items():
+                key = "from_str" if k == "from" else "to_str" if k == "to" else k
+                kwargs[key] = v
+            return kwargs
+
+        if isinstance(value, (str, int, float)):
+            # E.g. {"split": ","} or {"regex": "pattern"}
+            if name == "split":
+                return {"delimiter": str(value)}
+            if name == "regex":
+                return {"pattern": str(value)}
+            return {"value": str(value)}
+
+        return {}
+
+    @classmethod
+    def create(cls, spec: str | dict[str, Any]) -> BaseTransformer:
+        """Create a transformer instance from a string name (e.g. "trim") or a dict spec.
+
+        Example: {"replace": {"from": ",", "to": "."}} or {"regex": "([0-9]+)"}.
+        """
+        name, kwargs = cls._parse_spec(spec)
 
         if name not in cls._transformers:
-            raise TransformationError(f"Unknown transformer '{name}'. Registered: {list(cls._transformers.keys())}")
+            msg = f"Unknown transformer '{name}'. Registered: {list(cls._transformers.keys())}"
+            raise TransformationError(msg)
 
         try:
             return cls._transformers[name](**kwargs)
         except TypeError as e:
-            raise TransformationError(f"Failed to instantiate transformer '{name}': {e}") from e
+            msg = f"Failed to instantiate transformer '{name}': {e}"
+            raise TransformationError(msg) from e
 
     @classmethod
-    def apply_pipeline(cls, values: List[str], pipeline_specs: List[Union[str, Dict[str, Any]]]) -> List[str]:
-        """Runs a list of values through a sequence of transformation steps."""
+    def apply_pipeline(cls, values: list[str], pipeline_specs: list[str | dict[str, Any]]) -> list[str]:
+        """Run a list of values through a sequence of transformation steps."""
         current = values
         for spec in pipeline_specs:
             transformer = cls.create(spec)

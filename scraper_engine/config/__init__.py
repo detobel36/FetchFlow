@@ -1,3 +1,7 @@
-from scraper_engine.config.validator import ConfigValidator, ConfigLoader, SCRAPER_CONFIG_SCHEMA
+from scraper_engine.config.validator import (
+    SCRAPER_CONFIG_SCHEMA,
+    ConfigLoader,
+    ConfigValidator,
+)
 
-__all__ = ["ConfigValidator", "ConfigLoader", "SCRAPER_CONFIG_SCHEMA"]
+__all__ = ["SCRAPER_CONFIG_SCHEMA", "ConfigLoader", "ConfigValidator"]

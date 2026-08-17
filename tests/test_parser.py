@@ -1,7 +1,5 @@
-import pytest
-from scraper_engine.parser import HTMLDocument
 from scraper_engine.extraction import ElementExtractor
-
+from scraper_engine.parser import HTMLDocument
 
 HTML_SAMPLE = """
 <html>
@@ -27,18 +25,21 @@ def test_html_parsing_and_css_extraction():
     assert len(containers) == 2
 
     # Extract title text from first container
-    titles = ElementExtractor.extract_field_values(containers[0], ".title", selector_type="css", extraction_type="text")
+    titles = ElementExtractor.extract_field_values(containers[0], ".title", selector_type="css",
+                                                   extraction_type="text")
     assert titles == ["  Widget A  "]
 
     # Extract href attribute from link
-    links = ElementExtractor.extract_field_values(containers[0], "a.link", selector_type="css", extraction_type="attribute", attribute="href")
+    links = ElementExtractor.extract_field_values(containers[0], "a.link", selector_type="css",
+                                                  extraction_type="attribute", attribute="href")
     assert links == ["/item/1"]
 
 
 def test_xpath_extraction():
     doc = HTMLDocument(HTML_SAMPLE)
 
-    titles = ElementExtractor.extract_field_values(doc, "//h2[@class='title']", selector_type="xpath", extraction_type="text")
+    titles = ElementExtractor.extract_field_values(doc, "//h2[@class='title']", selector_type="xpath",
+                                                   extraction_type="text")
     assert titles == ["  Widget A  ", "Widget B"]
 
     attrs = ElementExtractor.extract_field_values(doc, "//a/@href", selector_type="xpath")
