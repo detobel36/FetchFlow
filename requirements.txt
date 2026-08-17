@@ -1,0 +1,5 @@
+httpx
+lxml
+jsonschema
+cssselect
+pytest
