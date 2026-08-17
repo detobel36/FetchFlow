@@ -30,3 +30,7 @@ Welcome to the **FetchFlow** wiki! FetchFlow is a lightweight, configuration-dri
    - Interactive developer tool overview
    - Launching via CLI (`python -m preview`)
    - Step navigation, element highlighting, and loop iteration debugging
+8. [Using FetchFlow as a Python Library](python-library-guide.md)
+   - Programmatic workflow execution with `Scraper`
+   - Low-level HTML/JSON parsing and BeautifulSoup-style selection
+   - Registering custom document parsers and selector engines
