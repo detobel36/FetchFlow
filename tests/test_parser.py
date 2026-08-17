@@ -44,3 +44,40 @@ def test_xpath_extraction():
 
     attrs = ElementExtractor.extract_field_values(doc, "//a/@href", selector_type="xpath")
     assert attrs == ["/item/1", "/item/2"]
+
+
+LIST_SAMPLE = """
+<html>
+    <body>
+        <ul class="items">
+            <li>First Item</li>
+            <li>Second Item</li>
+            <li>Third Item</li>
+            <li>Fourth Item</li>
+        </ul>
+    </body>
+</html>
+"""
+
+
+def test_css_nth_element_selection():
+    doc = HTMLDocument(LIST_SAMPLE)
+
+    nth_child_3 = ElementExtractor.extract_field_values(
+        doc, "ul.items > li:nth-child(3)", selector_type="css", extraction_type="text",
+    )
+    assert nth_child_3 == ["Third Item"]
+
+    nth_type_3 = ElementExtractor.extract_field_values(
+        doc, "ul.items > li:nth-of-type(3)", selector_type="css", extraction_type="text",
+    )
+    assert nth_type_3 == ["Third Item"]
+
+
+def test_xpath_nth_element_selection():
+    doc = HTMLDocument(LIST_SAMPLE)
+
+    xpath_3 = ElementExtractor.extract_field_values(
+        doc, "//ul[@class='items']/li[3]", selector_type="xpath", extraction_type="text",
+    )
+    assert xpath_3 == ["Third Item"]

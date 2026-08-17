@@ -164,4 +164,44 @@ Use XPath expressions for advanced selection (e.g. attributes or sub-tree querie
 
 ---
 
+## Selecting Specific Elements by Position (e.g., 3rd Element)
+
+To select a specific element by its index or position in a list (such as selecting the 3rd item), you can specify positional expressions directly in your CSS selectors or XPath queries:
+
+### Using CSS Selectors (`:nth-child` / `:nth-of-type`)
+
+Use the CSS pseudo-classes `:nth-child(n)` or `:nth-of-type(n)` to select the $n$-th element (1-based index):
+
+```json
+"third_item": {
+  "selector": "ul.items > li:nth-child(3)",
+  "selector_type": "css",
+  "type": "text"
+}
+```
+
+or using `:nth-of-type(3)`:
+
+```json
+"third_paragraph": {
+  "selector": "div.content > p:nth-of-type(3)",
+  "selector_type": "css",
+  "type": "text"
+}
+```
+
+### Using XPath Indexing (`[n]`)
+
+Use 1-based numerical predicates in XPath expressions to target specific nodes:
+
+```json
+"third_item": {
+  "selector": "//ul[@class='items']/li[3]",
+  "selector_type": "xpath",
+  "type": "text"
+}
+```
+
+---
+
 **Next:** Learn about the [Transformations Pipeline](transformations.md).
