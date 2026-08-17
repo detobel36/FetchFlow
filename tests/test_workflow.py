@@ -249,3 +249,63 @@ def test_nested_loops_same_page_and_for_each_rest():
     assert results[2]["sub_id"] == "s24-256"
     assert results[2]["memory"] == "256GB"
     assert results[2]["price"] == "$849"
+
+
+def test_workflow_positional_selector():
+    page_html = """
+    <html>
+        <body>
+            <ul class="rankings">
+                <li>Gold Medal</li>
+                <li>Silver Medal</li>
+                <li>Bronze Medal</li>
+                <li>Consolation Prize</li>
+            </ul>
+        </body>
+    </html>
+    """
+
+    def mock_handler(request: httpx.Request):
+        return httpx.Response(200, text=page_html, request=request)
+
+    transport = httpx.MockTransport(mock_handler)
+    http_client = httpx.Client(transport=transport)
+
+    config = {
+        "name": "positional_selector_scraper",
+        "steps": [
+            {
+                "id": "get_bronze",
+                "request": {
+                    "method": "GET",
+                    "url": "https://example.com/rankings",
+                },
+                "fields": {
+                    "css_third": {
+                        "selector": "ul.rankings > li:nth-child(3)",
+                        "selector_type": "css",
+                        "type": "text",
+                    },
+                    "xpath_third": {
+                        "selector": "//ul[@class='rankings']/li[3]",
+                        "selector_type": "xpath",
+                        "type": "text",
+                    },
+                },
+            },
+        ],
+    }
+
+    ConfigValidator.validate(config)
+
+    from scraper_engine.http import HTTPXClient
+
+    client_wrapper = HTTPXClient(client=http_client)
+    scraper = Scraper(config=config, http_client=client_wrapper)
+    results = scraper.run()
+
+    assert len(results) == 1
+    assert results[0] == {
+        "css_third": "Bronze Medal",
+        "xpath_third": "Bronze Medal",
+    }
