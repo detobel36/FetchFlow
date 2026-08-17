@@ -118,6 +118,124 @@ def test_workflow_execution():
     assert results[1] == {"id": "102", "name": "Laptop", "price": "1299"}
 
 
+def test_json_rest_api_workflow():
+    json_products = """
+    {
+        "status": "success",
+        "data": {
+            "items": [
+                {"id": 1, "title": "Headphones", "category_id": 10},
+                {"id": 2, "title": "Keyboard", "category_id": 20}
+            ]
+        }
+    }
+    """
+
+    json_item_1 = '{"id": 1, "in_stock": true, "specs": {"weight": "250g", "color": "black"}}'
+    json_item_2 = '{"id": 2, "in_stock": false, "specs": {"weight": "500g", "color": "white"}}'
+
+    def mock_handler(request: httpx.Request):
+        url = str(request.url)
+        if url == "https://api.example.com/v1/products":
+            return httpx.Response(
+                200,
+                text=json_products,
+                headers={"content-type": "application/json"},
+                request=request,
+            )
+        if "items/1" in url:
+            return httpx.Response(
+                200,
+                text=json_item_1,
+                headers={"content-type": "application/json"},
+                request=request,
+            )
+        if "items/2" in url:
+            return httpx.Response(
+                200,
+                text=json_item_2,
+                headers={"content-type": "application/json"},
+                request=request,
+            )
+        return httpx.Response(404, text=f"Not Found: {url}", request=request)
+
+    transport = httpx.MockTransport(mock_handler)
+    http_client = httpx.Client(transport=transport)
+
+    config = {
+        "name": "json_rest_api_workflow",
+        "steps": [
+            {
+                "id": "get_products",
+                "request": {
+                    "method": "GET",
+                    "url": "https://api.example.com/v1/products",
+                    "response_type": "json",
+                },
+                "extract": {
+                    "selector": "$.data.items[*]",
+                    "selector_type": "jsonpath",
+                },
+                "fields": {
+                    "product_id": {
+                        "selector": "$.id",
+                        "selector_type": "jsonpath",
+                    },
+                    "title": {
+                        "selector": "$.title",
+                        "selector_type": "jsonpath",
+                        "transform": ["upper"],
+                    },
+                },
+            },
+            {
+                "id": "get_details",
+                "for_each": {
+                    "from": "get_products",
+                    "field": "product_id",
+                },
+                "request": {
+                    "method": "GET",
+                    "url": "https://api.example.com/v1/items/{{product_id}}",
+                    "response_type": "json",
+                },
+                "fields": {
+                    "in_stock": {
+                        "selector": "$.in_stock",
+                        "selector_type": "jsonpath",
+                    },
+                    "weight": {
+                        "selector": "$.specs.weight",
+                        "selector_type": "jsonpath",
+                    },
+                },
+            },
+        ],
+    }
+
+    ConfigValidator.validate(config)
+
+    from scraper_engine.http import HTTPXClient
+
+    client_wrapper = HTTPXClient(client=http_client)
+    scraper = Scraper(config=config, http_client=client_wrapper)
+    results = scraper.run()
+
+    assert len(results) == 2
+    assert results[0] == {
+        "product_id": 1,
+        "title": "HEADPHONES",
+        "in_stock": True,
+        "weight": "250g",
+    }
+    assert results[1] == {
+        "product_id": 2,
+        "title": "KEYBOARD",
+        "in_stock": False,
+        "weight": "500g",
+    }
+
+
 def test_nested_loops_same_page_and_for_each_rest():
     catalog_html = """
     <html>
