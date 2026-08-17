@@ -65,6 +65,46 @@ If you specify `extract` with selector `.item-card`:
 
 ---
 
+## Nested Field Extractions (Same-Page Nested Loops)
+
+When HTML containers contain nested sub-containers (e.g., product items that contain multiple sub-product options or memory variants), you can define a nested `fields` extraction block inside a parent field definition.
+
+```json
+{
+  "id": "products_step",
+  "request": {
+    "url": "https://example.com/products"
+  },
+  "extract": {
+    "selector": ".product"
+  },
+  "fields": {
+    "title": {
+      "selector": ".product-title",
+      "type": "text"
+    },
+    "sub_products": {
+      "extract": {
+        "selector": ".sub-product",
+        "selector_type": "css"
+      },
+      "fields": {
+        "sub_id": {
+          "selector": ".sub-id",
+          "type": "text"
+        },
+        "capacity": {
+          "selector": ".capacity",
+          "type": "text"
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
 ## Field Extraction Properties
 
 | Property | Type | Default | Description |
@@ -74,6 +114,8 @@ If you specify `extract` with selector `.item-card`:
 | `type` | string | `"text"` | `"text"` to extract element text, or `"attribute"` for an HTML attribute value. |
 | `attribute` | string | Required if `type="attribute"` | Name of the HTML attribute to extract (e.g. `"href"`, `"data-id"`). |
 | `transform` | array | `[]` | Pipeline of transformations to apply to extracted value(s). |
+| `extract` | object | Optional | Sub-container extraction selector for nested fields. |
+| `fields` | object | Optional | Map of sub-fields to extract recursively within each sub-container. |
 
 ---
 
