@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scraper Preview & Debugger</title>
+
+  <!-- CodeMirror CSS & Themes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- CodeMirror JS & JSON Mode -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Top Header Bar -->
+    <header class="top-bar">
+      <div class="brand">
+        <span class="icon">🔍</span>
+        <h1>Scraper Preview & Debugger</h1>
+        <span id="session-status" class="status-badge badge-idle">Idle</span>
+      </div>
+      <div class="top-actions">
+        <button id="btn-run" class="btn btn-primary">▶ Run</button>
+        <button id="btn-rerun" class="btn btn-secondary">⚡ Re-run Step</button>
+        <button id="btn-restart" class="btn btn-danger">🔄 Restart</button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Split-Panel -->
+    <main class="workspace">
+      <!-- Left Panel: JSON Editor -->
+      <section class="panel panel-left">
+        <div class="panel-header">
+          <h2>JSON Configuration</h2>
+          <div class="panel-tools">
+            <button id="btn-apply" class="btn btn-sm btn-outline">Apply & Validate</button>
+          </div>
+        </div>
+
+        <!-- Validation Error Alert Banner -->
+        <div id="validation-alert" class="alert alert-error hidden">
+          <div class="alert-title" id="alert-title">Configuration Error</div>
+          <div class="alert-body" id="alert-body"></div>
+        </div>
+
+        <div class="editor-container">
+          <textarea id="json-editor"></textarea>
+        </div>
+      </section>
+
+      <!-- Right Panel: Page & Response Preview -->
+      <section class="panel panel-right">
+        <div class="tabs-header">
+          <button class="tab-btn active" data-tab="tab-html">🌐 HTML Preview</button>
+          <button class="tab-btn" data-tab="tab-data">📊 Extracted Data</button>
+          <button class="tab-btn" data-tab="tab-request">📤 Request</button>
+          <button class="tab-btn" data-tab="tab-response">📥 Response</button>
+          <button class="tab-btn" data-tab="tab-transforms">⚡ Transforms</button>
+        </div>
+
+        <div class="tabs-content">
+          <!-- Tab 1: HTML Preview -->
+          <div id="tab-html" class="tab-pane active">
+            <div id="selector-info-bar" class="selector-info-bar">
+              <span class="info-item"><strong>Selector:</strong> <code id="info-selector">-</code></span>
+              <span class="info-item"><strong>Type:</strong> <span id="info-type" class="badge-tag">-</span></span>
+              <span class="info-item"><strong>Matches:</strong> <span id="info-matches" class="badge-tag count">-</span></span>
+            </div>
+            <div class="iframe-wrapper">
+              <iframe id="preview-iframe" title="HTML Preview" sandbox="allow-same-origin"></iframe>
+            </div>
+          </div>
+
+          <!-- Tab 2: Extracted Data -->
+          <div id="tab-data" class="tab-pane">
+            <div class="pane-section">
+              <h3>Step Extraction Results</h3>
+              <pre id="data-results-view" class="json-code-block"></pre>
+            </div>
+          </div>
+
+          <!-- Tab 3: Request -->
+          <div id="tab-request" class="tab-pane">
+            <div class="pane-section">
+              <div class="http-url-bar">
+                <span id="req-method" class="http-method">GET</span>
+                <span id="req-url" class="http-url">https://...</span>
+              </div>
+
+              <h4>Request Headers</h4>
+              <div id="req-headers-table" class="key-value-table"></div>
+
+              <h4>Query Parameters</h4>
+              <div id="req-params-table" class="key-value-table"></div>
+            </div>
+          </div>
+
+          <!-- Tab 4: Response -->
+          <div id="tab-response" class="tab-pane">
+            <div class="pane-section">
+              <div class="http-status-bar">
+                <span id="resp-status" class="status-code">200 OK</span>
+                <span class="metric"><strong>Duration:</strong> <span id="resp-duration">-</span></span>
+                <span class="metric"><strong>Size:</strong> <span id="resp-size">-</span></span>
+                <span class="metric"><strong>Type:</strong> <span id="resp-content-type">-</span></span>
+              </div>
+
+              <h4>Response Headers</h4>
+              <div id="resp-headers-table" class="key-value-table"></div>
+
+              <h4>Raw Response Body</h4>
+              <pre id="resp-body-view" class="code-preview-block"></pre>
+            </div>
+          </div>
+
+          <!-- Tab 5: Transforms -->
+          <div id="tab-transforms" class="tab-pane">
+            <div class="pane-section">
+              <h3>Field Transformation Pipelines</h3>
+              <div id="transforms-pipeline-view" class="pipeline-container"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <footer class="bottom-bar">
+      <!-- Step Controls -->
+      <div class="nav-group step-nav">
+        <button id="btn-prev-step" class="btn btn-nav">← Previous Step</button>
+        <div class="nav-indicator">
+          <span class="indicator-title">STEP</span>
+          <span id="step-counter" class="indicator-value">Step 0 / 0</span>
+          <span id="step-id-badge" class="badge-step-id">none</span>
+        </div>
+        <button id="btn-next-step" class="btn btn-nav">Next Step →</button>
+      </div>
+
+      <!-- Iteration Controls (Visible during loops) -->
+      <div id="iteration-controls" class="nav-group iteration-nav hidden">
+        <button id="btn-prev-iter" class="btn btn-nav btn-sm">← Prev Iteration</button>
+        <div class="nav-indicator">
+          <span class="indicator-title">ITERATION</span>
+          <span id="iter-counter" class="indicator-value">1 / 1</span>
+        </div>
+        <button id="btn-next-iter" class="btn btn-nav btn-sm">Next Iteration →</button>
+        <div id="loop-context-badge" class="context-pill">Context: {}</div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

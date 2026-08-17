@@ -4,3 +4,5 @@ jsonschema
 cssselect
 pytest
 ruff
+fastapi
+uvicorn
