@@ -2,11 +2,11 @@
 
 ## 1. High-Level Architecture
 
-The **Config-Driven Python Web Scraping Engine** is a lightweight, embeddable Python library designed to execute web scraping workflows defined entirely in JSON. It is structured for low resource usage and clean extensibility, making it suitable for low-memory environments such as Kodi addons on Raspberry Pi.
+The **Config-Driven Python Web Scraping Engine** is a lightweight, embeddable Python library designed to execute web scraping workflows defined entirely in JSON. It is structured for low resource usage and clean extensibility, supporting both HTML documents and REST JSON API endpoints.
 
 ```text
                ┌───────────────────────┐
-               │   JSON Scraper Config  │
+               │   JSON Scraper Config │
                └───────────┬───────────┘
                            │
                    Config Loader & Validator (jsonschema)
@@ -18,10 +18,10 @@ The **Config-Driven Python Web Scraping Engine** is a lightweight, embeddable Py
                            │
        ┌───────────────────┼───────────────────┐
        ▼                   ▼                   ▼
-┌──────────────┐   ┌──────────────┐   ┌─────────────────┐
-│ HTTP Client  │   │ HTML Parser  │   │  Transformers   │
-│   (httpx)    │   │   (lxml)     │   │ (trim, regex..) │
-└──────────────┘   └──────────────┘   └─────────────────┘
+┌──────────────┐   ┌─────────────────┐ ┌─────────────────┐
+│ HTTP Client  │   │ Parser & Doc    │ │  Transformers   │
+│   (httpx)    │   │ (HTML / JSON)   │ │ (trim, regex..) │
+└──────────────┘   └─────────────────┘ └─────────────────┘
 ```
 
 ## 2. Component Design & Abstractions
@@ -30,29 +30,24 @@ The **Config-Driven Python Web Scraping Engine** is a lightweight, embeddable Py
    - Validates JSON configurations against JSON Schema (`Draft7Validator`). Fails fast with precise field path error messages.
 
 2. **HTTP Layer (`scraper_engine.http`)**:
-   - `HTTPClient` interface with `HTTPXClient` adapter using `httpx`. Reuses connection pools, supports custom headers and parameters, and is easily replaceable.
+   - `HTTPClient` interface with `HTTPXClient` adapter using `httpx`. Reuses connection pools, supports custom headers and parameters.
 
 3. **Templating System (`scraper_engine.templating`)**:
-   - `TemplateRenderer` performs variable substitution (`{{var_name}}`) across strings, dictionary structures, and request parameters. Supports nested context lookup.
+   - `TemplateRenderer` performs variable substitution (`{{var_name}}`) across strings, dictionary structures, and request parameters.
 
 4. **Parser & Extractor Layer (`scraper_engine.parser`, `scraper_engine.extraction`)**:
-   - `HTMLDocument` wraps `lxml.html`.
-   - `CSSSelectorEngine` and `XPathSelectorEngine` provide CSS/XPath support.
-   - `ElementExtractor` extracts text or attribute values, returning predictable string lists.
+   - Generic `BaseDocument` interface implemented by `HTMLDocument` (lxml) and `JSONDocument` (JSON).
+   - Registries for dynamic parser registration (`register_document_parser`) and selector engines (`register_selector_engine`).
+   - `CSSSelectorEngine`, `XPathSelectorEngine`, and `JSONPathSelectorEngine` for CSS, XPath, and JSONPath querying.
+   - `ElementExtractor` extracts text, attributes, or JSON primitive fields predictably.
 
 5. **Transformations Pipeline (`scraper_engine.transforms`)**:
-   - Registry-based (`TransformerRegistry`) pipeline supporting `trim`, `lower`, `upper`, `replace`, `split`, and `regex`. Handles 1-to-N value expansion seamlessly.
+   - Registry-based (`TransformerRegistry`) pipeline supporting `trim`, `lower`, `upper`, `replace`, `split`, and `regex`.
 
 6. **Workflow Executor (`scraper_engine.workflow`)**:
    - `ExecutionContext` maintains a scope stack for step results, global variables, and loop contexts.
-   - `StepExecutor` executes sequential steps and `for_each` loops.
+   - `StepExecutor` executes sequential steps and `for_each` loops on both HTML and REST JSON response payloads.
 
 ## 3. Future Evolution Roadmap
 
-The system is designed so future features can be added without modifying the core workflow engine:
-
-- **Methods & Auth**: Add POST/PUT/DELETE, headers, cookies, basic/bearer auth in `HTTPClient` / schema.
-- **Parsers & Selectors**: Register `JSONPathSelectorEngine` for JSON APIs alongside CSS/XPath.
-- **Nested Loops & Pagination**: Extend loop context stack in `ExecutionContext`.
-- **Concurrency & Rate Limiting**: Introduce task pools in `WorkflowEngine` or `HTTPClient`.
-- **Browser Automation**: Add optional Playwright/Chromium driver as an alternate `HTTPClient` implementation.
+The system is designed so future features (e.g. XML documents, GraphQL, or custom protocols) can be added without modifying the core workflow engine by registering new document parsers and selector engines.

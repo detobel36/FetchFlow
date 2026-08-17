@@ -16,6 +16,7 @@ classDiagram
     }
     class Step {
         +String id
+        +String parser
         +ForEach for_each
         +Request request
         +Extract extract
@@ -29,6 +30,7 @@ classDiagram
     class Request {
         +String method
         +String url
+        +String response_type
         +Map headers
         +Map params
     }
@@ -38,6 +40,7 @@ classDiagram
     }
     class Field {
         +String selector
+        +String selector_type
         +String type
         +String attribute
         +List transform
@@ -117,7 +120,8 @@ Each step defines a stage in the scraping workflow.
 | Key | Type | Required | Description |
 | --- | --- | --- | --- |
 | `id` | string | **Yes** | Step identifier. Output is stored under `id` for subsequent steps. |
-| `request` | object | No | HTTP request parameters (`url`, `method`, `headers`, `params`). See [HTTP Requests](requests.md). |
+| `parser` | string | No | Optional parser type override (`"html"`, `"json"`, etc.). Auto-detected if omitted. |
+| `request` | object | No | HTTP request parameters (`url`, `method`, `response_type`, `headers`, `params`). See [HTTP Requests](requests.md). |
 | `extract` | object | No | Root element selector for container items. See [Extraction & Selectors](extraction-and-selectors.md). |
 | `fields` | object | No | Extraction rules for individual or nested fields. See [Extraction & Selectors](extraction-and-selectors.md). |
 | `for_each` | object | No | Iterates over previous step results or sub-items. See [Workflows & Loops](workflows-and-loops.md). |
@@ -128,8 +132,8 @@ Each step defines a stage in the scraping workflow.
 
 To learn more about specific configuration sections:
 
-1. **[HTTP Requests](requests.md)** - Detailed guide on methods (`GET`, `POST`, `PUT`), headers, URL params, and dynamic templating.
-2. **[Extraction and Selectors](extraction-and-selectors.md)** - Container extraction vs field extraction, same-page nested loops, CSS vs XPath, and HTML attributes.
+1. **[HTTP Requests](requests.md)** - Detailed guide on methods (`GET`, `POST`, `PUT`), `response_type` (`"html"`, `"json"`), headers, URL params, and dynamic templating.
+2. **[Extraction and Selectors](extraction-and-selectors.md)** - Container extraction vs field extraction, same-page nested loops, CSS vs XPath vs JSONPath, and HTML attributes.
 3. **[Transformations Pipeline](transformations.md)** - Transforming extracted text values with built-in or custom transformers.
 4. **[Workflows & Loops](workflows-and-loops.md)** - Building multi-step scrapers and running `for_each` loops across results.
 

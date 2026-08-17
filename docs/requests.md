@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `request` object in a step specifies how to perform HTTP requests. FetchFlow uses `httpx` to execute HTTP calls efficiently.
+The `request` object in a step specifies how to perform HTTP requests. FetchFlow uses `httpx` to execute HTTP calls efficiently and supports both HTML web pages and REST API JSON endpoints.
 
 ## Request Properties
 
@@ -10,6 +10,7 @@ The `request` object in a step specifies how to perform HTTP requests. FetchFlow
 | --- | --- | --- | --- |
 | `url` | string | *Required* | Target URL. Supports dynamic template placeholders (`{{variable_name}}`). |
 | `method` | string | `"GET"` | HTTP method (e.g., `GET`, `POST`, `PUT`, `DELETE`). |
+| `response_type` | string | Auto-detected | Format of expected response (`"html"`, `"json"`). If omitted, inferred from content-type or structure. |
 | `headers` | object | `{}` | Key-value dictionary of HTTP request headers. Supports templating. |
 | `params` | object | `{}` | Key-value dictionary of URL query string parameters. Supports templating. |
 
@@ -28,7 +29,20 @@ Variables are resolved from:
 
 ## Examples
 
-### 1. GET Request with Query Parameters
+### 1. REST API JSON GET Request
+
+```json
+{
+  "id": "get_users",
+  "request": {
+    "method": "GET",
+    "url": "https://api.example.com/v1/users",
+    "response_type": "json"
+  }
+}
+```
+
+### 2. GET Request with Query Parameters
 
 ```json
 {
@@ -44,7 +58,7 @@ Variables are resolved from:
 }
 ```
 
-### 2. POST Request with Parameters & Dynamic Headers
+### 3. POST Request with Parameters & Dynamic Headers
 
 ```json
 {
@@ -59,24 +73,6 @@ Variables are resolved from:
     "params": {
       "action": "create",
       "category": "books"
-    }
-  }
-}
-```
-
-### 3. PUT Request Example
-
-```json
-{
-  "id": "put_example",
-  "request": {
-    "method": "PUT",
-    "url": "https://api.example.com/items/{{item_id}}",
-    "headers": {
-      "Accept": "application/json"
-    },
-    "params": {
-      "status": "active"
     }
   }
 }

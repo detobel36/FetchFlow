@@ -1,0 +1,59 @@
+{
+  "name": "rest_api_scraper",
+  "version": "1.0.0",
+  "variables": {
+    "api_base": "https://api.example.com/v1"
+  },
+  "steps": [
+    {
+      "id": "get_users",
+      "request": {
+        "method": "GET",
+        "url": "{{api_base}}/users",
+        "response_type": "json"
+      },
+      "extract": {
+        "selector": "$.data[*]",
+        "selector_type": "jsonpath"
+      },
+      "fields": {
+        "user_id": {
+          "selector": "$.id",
+          "selector_type": "jsonpath"
+        },
+        "username": {
+          "selector": "$.username",
+          "selector_type": "jsonpath",
+          "transform": ["trim", "lower"]
+        }
+      }
+    },
+    {
+      "id": "get_user_posts",
+      "for_each": {
+        "from": "get_users",
+        "field": "user_id"
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{api_base}}/users/{{user_id}}/posts",
+        "response_type": "json"
+      },
+      "extract": {
+        "selector": "$.posts[*]",
+        "selector_type": "jsonpath"
+      },
+      "fields": {
+        "post_id": {
+          "selector": "$.id",
+          "selector_type": "jsonpath"
+        },
+        "title": {
+          "selector": "$.title",
+          "selector_type": "jsonpath",
+          "transform": ["trim"]
+        }
+      }
+    }
+  ]
+}

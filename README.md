@@ -12,7 +12,7 @@ A lightweight, configuration-driven web scraping engine in Python designed for l
 
 - **JSON Configuration-Driven**: Define scraping workflows, URL templates, selectors, and transformations purely in JSON.
 - **Low Resource Usage**: Minimal dependencies (`httpx`, `lxml`, `jsonschema`, `cssselect`). No browser automation required by default.
-- **Unified Extractors**: Supports CSS selectors and XPath for HTML parsing.
+- **Unified Extractors**: Supports CSS selectors and XPath for HTML parsing, as well as JSONPath for REST JSON APIs. Extensible for future document formats.
 - **Flexible Transformations**: Composable transformations (`trim`, `lower`, `upper`, `replace`, `split`, `regex`).
 - **Sequential Workflows & Loops**: Pass extracted variables between steps and iterate using `for_each`.
 
@@ -52,6 +52,12 @@ Output results to a file:
 
 ```bash
 python -m scraper_engine examples/ecommerce_scraper.json -o results.json
+```
+
+Or execute a REST JSON API scraper workflow:
+
+```bash
+python -m scraper_engine examples/rest_api_scraper.json
 ```
 
 ### Usage in Python
