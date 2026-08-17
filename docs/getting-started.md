@@ -2,20 +2,11 @@
 
 ## Overview
 
-FetchFlow executes web scraping workflows defined entirely in JSON. It requires minimal dependencies and can be run both programmatically in Python or directly via the Command Line Interface (CLI).
+FetchFlow executes web scraping workflows defined entirely in JSON. It requires minimal dependencies and can be run programmatically in Python or via the Command Line Interface (CLI).
 
 ## Dependencies
 
-To run FetchFlow, Python dependencies are required. All necessary dependencies are defined in the project's [`requirements.txt`](../requirements.txt) file:
-
-- **httpx**: Fast, full-featured HTTP client.
-- **lxml**: High-performance HTML parsing engine.
-- **jsonschema**: JSON schema validator for checking configuration syntax.
-- **cssselect**: CSS selector support for `lxml`.
-
-### Installing Dependencies
-
-Install all required dependencies using `pip` and `requirements.txt`:
+Python dependencies are required to run FetchFlow. All required dependencies are listed in [`requirements.txt`](../requirements.txt):
 
 ```bash
 pip install -r requirements.txt
@@ -23,82 +14,45 @@ pip install -r requirements.txt
 
 ---
 
-## Running Scrapers via CLI (Command-Line Testing)
+## Running Scrapers via CLI
 
-FetchFlow provides a CLI tool for testing JSON scraping configurations without writing Python code.
+FetchFlow includes a CLI for executing and testing JSON scrapers without writing Python code.
 
-### Usage
+### Usage & Example
+
+You can run an example config from the repository:
 
 ```bash
-python3 -m scraper_engine path/to/config.json
+python3 -m scraper_engine examples/getting_started.json
 ```
 
-### Options
-
+**Options:**
 - `config`: Path to a JSON configuration file, or a raw JSON string.
-- `-o`, `--output`: Path to write the JSON result (if omitted, output is printed to `stdout`).
+- `-o`, `--output`: Path to write JSON results (if omitted, results print to `stdout`).
 - `--indent`: JSON output indentation level (default: `2`).
 
-### CLI Example
-
-Save the following JSON to `my_scraper.json`:
-
-```json
-{
-  "name": "quick_start",
-  "steps": [
-    {
-      "id": "heading",
-      "request": {
-        "url": "https://example.com"
-      },
-      "fields": {
-        "title": {
-          "selector": "h1",
-          "type": "text",
-          "transform": ["trim"]
-        }
-      }
-    }
-  ]
-}
-```
-
-Run in command line:
+Save results directly to a file:
 
 ```bash
-python3 -m scraper_engine my_scraper.json
-```
-
-Output printed to console:
-
-```json
-[
-  {
-    "title": "Example Domain"
-  }
-]
-```
-
-To save output directly to a file:
-
-```bash
-python3 -m scraper_engine my_scraper.json -o results.json
+python3 -m scraper_engine examples/getting_started.json -o results.json
 ```
 
 ---
 
-## Using FetchFlow in Python Code
+## Using FetchFlow in Python
 
-You can also import and execute scrapers within Python applications:
+Execute scrapers inside Python applications:
 
 ```python
 from scraper_engine import Scraper
 
-# Load from file path or JSON string/dict
-scraper = Scraper("my_scraper.json")
+scraper = Scraper("examples/getting_started.json")
 results = scraper.run()
 
 for item in results:
     print(item)
 ```
+
+---
+
+**Next:** Proceed to [Configuration Structure](configuration-structure.md) to learn how to structure JSON configurations.

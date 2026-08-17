@@ -4,47 +4,39 @@
 
 After raw text or attribute values are extracted from HTML, FetchFlow allows running them through a chain of string transformers specified in `transform`.
 
-Transformations are configured as an ordered array of transformer names (strings) or parameter objects.
-
-```json
-"transform": [
-  "trim",
-  "lower",
-  { "replace": { "from": "$", "to": "" } }
-]
-```
+Transformations are configured as an ordered array of transformer keywords or parameter objects.
 
 ---
 
 ## Built-In Transformers
 
-### 1. `trim`
-Removes leading and trailing whitespace from strings.
-- **Config**: `"trim"`
+### 1. Simple Keyword Transformers
 
-### 2. `lower`
-Converts text to lowercase.
-- **Config**: `"lower"`
+- **`trim`**: Removes leading and trailing whitespace.
+  - *Example:* `"   hello world  "` &rarr; `"hello world"`
+- **`lower`**: Converts text to lowercase.
+  - *Example:* `"Hello World"` &rarr; `"hello world"`
+- **`upper`**: Converts text to uppercase.
+  - *Example:* `"hello world"` &rarr; `"HELLO WORLD"`
 
-### 3. `upper`
-Converts text to uppercase.
-- **Config**: `"upper"`
+### 2. Parameterized Transformers
 
-### 4. `replace`
-Replaces substring matches with a new substring.
-- **Config**: `{"replace": {"from": "old_string", "to": "new_string"}}`
-
-### 5. `split`
-Splits a string by a delimiter into a list of strings (1-to-N expansion).
-- **Config**: `{"split": ","}`
-
-### 6. `regex`
-Applies a regular expression pattern. If the regex contains capture groups, it extracts the captured group string.
-- **Config**: `{"regex": "([0-9,.]+)"}`
+- **`replace`**: Replaces occurrences of a string with another.
+  - **Parameters:** `from` (string to search), `to` (replacement string).
+  - *Config:* `{"replace": {"from": "$", "to": ""}}`
+  - *Example:* `"$19.99"` &rarr; `"19.99"`
+- **`split`**: Splits a string into a list of strings by a delimiter.
+  - **Parameter:** delimiter string.
+  - *Config:* `{"split": ","}`
+  - *Example:* `"apple,banana,orange"` &rarr; `["apple", "banana", "orange"]`
+- **`regex`**: Extracts matching pattern or capture group.
+  - **Parameter:** regex pattern string.
+  - *Config:* `{"regex": "([0-9.]+)"}`
+  - *Example:* `"Price: 29.95 USD"` &rarr; `"29.95"`
 
 ---
 
-## JSON Transformation Pipeline Example
+## JSON Pipeline Example
 
 ```json
 {
@@ -60,16 +52,34 @@ Applies a regular expression pattern. If the regex contains capture groups, it e
         { "replace": { "from": "USD", "to": "" } },
         { "regex": "([0-9.]+)" }
       ]
-    },
-    "tags": {
-      "selector": ".tags",
-      "type": "text",
-      "transform": [
-        "trim",
-        "lower",
-        { "split": "," }
-      ]
     }
   }
 }
 ```
+
+---
+
+## Extending with Custom Transformers (Python API)
+
+Developers can register custom transformation functions using `TransformerRegistry`:
+
+```python
+from scraper_engine.transforms import BaseTransformer, TransformerRegistry
+
+class ReverseTransformer(BaseTransformer):
+    def transform_single(self, value: str) -> str:
+        return value[::-1]
+
+# Register custom transformer with keyword 'reverse'
+TransformerRegistry.register("reverse", ReverseTransformer)
+```
+
+Once registered in Python, the custom keyword can be used directly in JSON configs:
+
+```json
+"transform": ["trim", "reverse"]
+```
+
+---
+
+**Next:** Learn about [Workflows & Loops](workflows-and-loops.md).

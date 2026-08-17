@@ -2,22 +2,35 @@
 
 ## Sequential Execution & Scope
 
-Steps in FetchFlow execute sequentially in the order they are listed in the `steps` array.
-
-Each step's extracted output is stored in the execution context under its step `id`. Subsequent steps can reference extracted values using mustache placeholders `{{step_id.field_name}}` or inside `for_each` loops.
+Steps in FetchFlow execute sequentially. Output from each step is stored under its `id` and can be passed to subsequent steps.
 
 ---
 
-## `for_each` Loops
+## `for_each` Sequence Diagram
 
-To perform multi-step web scraping (e.g., fetching a list of categories/items first, and then visiting each item page to extract detailed info), use the `for_each` construct.
+The following sequence diagram illustrates how a two-step workflow with a `for_each` loop operates:
 
-### `for_each` Schema
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Engine as WorkflowEngine
+    participant Site as Target Website
+    participant Context as ExecutionContext
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `from` | string | *Required*. The `id` of a previous step whose extracted items should be iterated over. |
-| `field` | string | Optional. Specific field name in the previous step item to expose as `{{value}}`. |
+    Note over Engine, Context: Step 1: Extract List
+    Engine->>Site: GET /products
+    Site-->>Engine: HTML List Page
+    Engine->>Context: Save list items as "list_step"
+
+    Note over Engine, Context: Step 2: for_each Loop over "list_step"
+    loop For each item in "list_step"
+        Engine->>Context: Push loop item context (item_id)
+        Engine->>Site: GET /product/{{item_id}}/details
+        Site-->>Engine: HTML Detail Page
+        Engine->>Context: Merge extracted details with item context
+        Engine->>Context: Pop loop item context
+    end
+```
 
 ---
 
@@ -44,11 +57,6 @@ To perform multi-step web scraping (e.g., fetching a list of categories/items fi
           "selector": ".id-tag",
           "type": "text",
           "transform": ["trim"]
-        },
-        "item_title": {
-          "selector": ".title",
-          "type": "text",
-          "transform": ["trim"]
         }
       }
     },
@@ -66,11 +74,6 @@ To perform multi-step web scraping (e.g., fetching a list of categories/items fi
         "selector": ".details-card"
       },
       "fields": {
-        "description": {
-          "selector": ".description",
-          "type": "text",
-          "transform": ["trim"]
-        },
         "price": {
           "selector": ".price",
           "type": "text",
@@ -82,8 +85,6 @@ To perform multi-step web scraping (e.g., fetching a list of categories/items fi
 }
 ```
 
-### Context Merging in Loops
+---
 
-When executing a step inside a `for_each` loop:
-1. The request URL rendering can access fields from the item being iterated over (e.g., `{{item_id}}` or `{{value}}`).
-2. The final result for the detail step merges the fields extracted in `list_step` with the newly extracted fields from `detail_step`.
+**Next:** Return to the [Wiki Overview](INDEX.md).

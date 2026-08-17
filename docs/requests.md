@@ -2,20 +2,20 @@
 
 ## Overview
 
-The `request` object in a step specifies how to perform HTTP requests. FetchFlow uses `httpx` to handle requests efficiently.
+The `request` object in a step specifies how to perform HTTP requests. FetchFlow uses `httpx` to execute HTTP calls efficiently.
 
 ## Request Properties
 
 | Property | Type | Default | Description |
 | --- | --- | --- | --- |
-| `url` | string | *Required* | Target URL. Supports mustache-style template rendering (`{{variable_name}}`). |
+| `url` | string | *Required* | Target URL. Supports dynamic template placeholders (`{{variable_name}}`). |
 | `method` | string | `"GET"` | HTTP method (e.g., `GET`, `POST`, `PUT`, `DELETE`). |
 | `headers` | object | `{}` | Key-value dictionary of HTTP request headers. Supports templating. |
 | `params` | object | `{}` | Key-value dictionary of URL query string parameters. Supports templating. |
 
 ---
 
-## Templating Placeholders (`{{var}}`)
+## Dynamic Template Placeholders (`{{var}}`)
 
 Values inside `url`, `headers`, and `params` strings can include dynamic variables enclosed in double curly braces `{{var_name}}`.
 
@@ -28,7 +28,7 @@ Variables are resolved from:
 
 ## Examples
 
-### 1. Simple GET Request with Query Parameters
+### 1. GET Request with Query Parameters
 
 ```json
 {
@@ -44,27 +44,44 @@ Variables are resolved from:
 }
 ```
 
-### 2. Request with Custom Headers & Dynamic Variables
+### 2. POST Request with Parameters & Dynamic Headers
 
 ```json
 {
-  "name": "templated_request_example",
-  "variables": {
-    "domain": "example.com",
-    "api_token": "secret_token_123"
-  },
-  "steps": [
-    {
-      "id": "fetch_user_data",
-      "request": {
-        "method": "GET",
-        "url": "https://{{domain}}/api/v1/user",
-        "headers": {
-          "Authorization": "Bearer {{api_token}}",
-          "User-Agent": "FetchFlow-Engine"
-        }
-      }
+  "id": "post_example",
+  "request": {
+    "method": "POST",
+    "url": "https://api.example.com/items",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Authorization": "Bearer {{user_token}}"
+    },
+    "params": {
+      "action": "create",
+      "category": "books"
     }
-  ]
+  }
 }
 ```
+
+### 3. PUT Request Example
+
+```json
+{
+  "id": "put_example",
+  "request": {
+    "method": "PUT",
+    "url": "https://api.example.com/items/{{item_id}}",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "params": {
+      "status": "active"
+    }
+  }
+}
+```
+
+---
+
+**Next:** Learn about [Extraction and Selectors](extraction-and-selectors.md).

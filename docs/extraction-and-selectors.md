@@ -4,100 +4,102 @@
 
 FetchFlow parses HTML responses using `lxml` and supports both **CSS selectors** and **XPath expressions**.
 
-Extraction happens in two levels:
-1. **Container Extraction (`extract`)**: Identifies repeated HTML block elements on a page (e.g. list items or product cards).
-2. **Field Extraction (`fields`)**: Extracts specific text or attribute values inside each container element.
+Extraction occurs in two distinct stages:
+1. **Container Extraction (`extract`)**: Identifies repeating HTML block/container elements on a page (e.g. product cards).
+2. **Field Extraction (`fields`)**: Extracts specific text or attribute values within each container element.
 
 ---
 
-## Container Extraction (`extract`)
+## HTML Structural Example & Extraction Scope
 
-If `extract` is specified, the step iterates over all matching HTML nodes and extracts fields relative to each matching container node. If omitted, field selectors run against the entire document root.
+Consider the following HTML document:
 
-### Properties
-
-| Property | Type | Default | Description |
-| --- | --- | --- | --- |
-| `selector` | string | *Required* | CSS selector or XPath query matching container elements. |
-| `selector_type` | string | `"css"` | Selector syntax: `"css"` or `"xpath"`. |
-
-```json
-"extract": {
-  "selector": "ul.product-list > li.item",
-  "selector_type": "css"
-}
+```html
+<div class="item-card">
+  <h2 class="title">Item 1</h2>
+</div>
+<div class="item-card">
+  <h2 class="title">Item 2</h2>
+  <h2>Another title</h2>
+</div>
+<h2 class="title">Sub section</h2>
 ```
 
----
+### Understanding `extract` vs `fields`
 
-## Field Extraction (`fields`)
+If you specify `extract` with selector `.item-card`:
+- FetchFlow scopes extraction strictly to elements inside each `<div class="item-card">`.
+- The standalone `<h2 class="title">Sub section</h2>` is ignored because it is outside `.item-card`.
+- Inside the second `.item-card`, `<h2>Another title</h2>` does not match `h2.title`, so only `Item 2` is extracted for `title`.
 
-The `fields` object defines a map of field names to field extraction rules.
-
-### Field Properties
-
-| Property | Type | Default | Description |
-| --- | --- | --- | --- |
-| `selector` | string | *Required* | CSS selector or XPath query relative to the container element. |
-| `selector_type` | string | `"css"` | `"css"` or `"xpath"`. |
-| `type` | string | `"text"` | `"text"` to extract element text context, or `"attribute"` to extract an HTML attribute value. |
-| `attribute` | string | Required if `type="attribute"` | Name of the HTML attribute to extract (e.g., `"href"`, `"src"`, `"data-id"`). |
-| `transform` | array | `[]` | Pipeline of transformations to apply to extracted string value(s). |
-
----
-
-## CSS vs XPath Examples
-
-### 1. Using CSS Selectors
+**JSON Configuration for this HTML:**
 
 ```json
 {
-  "id": "css_example",
-  "request": { "url": "https://example.com/items" },
+  "id": "items_step",
+  "request": {
+    "url": "https://example.com/catalog"
+  },
   "extract": {
     "selector": ".item-card",
     "selector_type": "css"
   },
   "fields": {
-    "title": {
+    "item_title": {
       "selector": "h2.title",
       "selector_type": "css",
       "type": "text"
-    },
-    "link": {
-      "selector": "a.more-info",
-      "selector_type": "css",
-      "type": "attribute",
-      "attribute": "href"
     }
   }
 }
 ```
 
-### 2. Using XPath Queries
-
-XPath allows advanced queries such as selecting attributes directly or searching by text content.
+**Result Output:**
 
 ```json
-{
-  "id": "xpath_example",
-  "request": { "url": "https://example.com/items" },
-  "extract": {
-    "selector": "//div[contains(@class, 'item-card')]",
-    "selector_type": "xpath"
-  },
-  "fields": {
-    "title": {
-      "selector": ".//h2/text()",
-      "selector_type": "xpath",
-      "type": "text"
-    },
-    "link": {
-      "selector": ".//a/@href",
-      "selector_type": "xpath",
-      "type": "attribute",
-      "attribute": "href"
-    }
-  }
+[
+  { "item_title": "Item 1" },
+  { "item_title": "Item 2" }
+]
+```
+
+---
+
+## Field Extraction Properties
+
+| Property | Type | Default | Description |
+| --- | --- | --- | --- |
+| `selector` | string | *Required* | CSS selector or XPath query relative to the container element. |
+| `selector_type` | string | `"css"` | `"css"` or `"xpath"`. |
+| `type` | string | `"text"` | `"text"` to extract element text, or `"attribute"` for an HTML attribute value. |
+| `attribute` | string | Required if `type="attribute"` | Name of the HTML attribute to extract (e.g. `"href"`, `"data-id"`). |
+| `transform` | array | `[]` | Pipeline of transformations to apply to extracted value(s). |
+
+---
+
+## Selector Types: CSS vs XPath
+
+### CSS Selectors
+Use standard CSS selector syntax:
+```json
+"title": {
+  "selector": "h2.title",
+  "selector_type": "css",
+  "type": "text"
 }
 ```
+
+### XPath Queries
+Use XPath expressions for advanced selection (e.g. attributes or sub-tree queries):
+```json
+"link": {
+  "selector": ".//a/@href",
+  "selector_type": "xpath",
+  "type": "attribute",
+  "attribute": "href"
+}
+```
+
+---
+
+**Next:** Learn about the [Transformations Pipeline](transformations.md).

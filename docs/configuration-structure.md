@@ -2,16 +2,16 @@
 
 ## Top-Level JSON Schema
 
-Every scraper configuration is represented as a JSON object containing global settings, global variables, and an array of workflow `steps`.
+Every scraper configuration is represented as a JSON object containing global metadata, global variables, and an ordered array of workflow `steps`.
 
 ### Schema Overview
 
 | Key | Type | Required | Description |
 | --- | --- | --- | --- |
 | `name` | string | **Yes** | A unique name or identifier for the scraper configuration. |
-| `version` | string | No | Optional version string for tracking configuration versions (e.g. `"1.0"`). |
-| `variables` | object | No | Dictionary of global string key-value pairs accessible across all steps. |
-| `steps` | array | **Yes** | An ordered list of step objects executed sequentially. Must contain at least 1 step. |
+| `version` | string | No | Optional version string (e.g. `"1.0"`). |
+| `variables` | object | No | Global key-value template variables. |
+| `steps` | array | **Yes** | Sequential execution steps. See [Workflows & Loops](workflows-and-loops.md). |
 
 ---
 
@@ -60,14 +60,29 @@ Every scraper configuration is represented as a JSON object containing global se
 
 ## Steps Structure
 
-Each item in the `steps` array defines a single execution unit in the workflow pipeline.
+Each step defines a stage in the scraping workflow.
 
 ### Step Properties
 
 | Key | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | string | **Yes** | Unique step identifier used to refer to its output in subsequent steps. |
-| `for_each` | object | No | Configures iteration over previous step results. |
-| `request` | object | No | HTTP request parameters (`url`, `method`, `headers`, `params`). |
-| `extract` | object | No | Root element container selector for repeating HTML elements. |
-| `fields` | object | No | Dictionary of field definitions to extract from each element container. |
+| `id` | string | **Yes** | Step identifier. Output is stored under `id` for subsequent steps. |
+| `request` | object | No | HTTP request parameters (`url`, `method`, `headers`, `params`). See [HTTP Requests](requests.md). |
+| `extract` | object | No | Root element selector for container items. See [Extraction & Selectors](extraction-and-selectors.md). |
+| `fields` | object | No | Extraction rules for individual fields. See [Extraction & Selectors](extraction-and-selectors.md). |
+| `for_each` | object | No | Iterates over previous step results. See [Workflows & Loops](workflows-and-loops.md). |
+
+---
+
+## Feature Deep Dives
+
+To learn more about specific configuration sections:
+
+1. **[HTTP Requests](requests.md)** - Detailed guide on methods (`GET`, `POST`, `PUT`), headers, URL params, and dynamic templating.
+2. **[Extraction and Selectors](extraction-and-selectors.md)** - Container extraction vs field extraction, CSS vs XPath, and HTML attributes.
+3. **[Transformations Pipeline](transformations.md)** - Transforming extracted text values with built-in or custom transformers.
+4. **[Workflows & Loops](workflows-and-loops.md)** - Building multi-step scrapers and running `for_each` loops across results.
+
+---
+
+**Next:** Learn how to configure [HTTP Requests](requests.md).
