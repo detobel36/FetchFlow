@@ -6,6 +6,24 @@ Steps in FetchFlow execute sequentially. Output from each step is stored under i
 
 ---
 
+## `for_each` Loops
+
+To perform multi-step web scraping (e.g., fetching a list of items first, and then visiting each item page to extract detailed info), use the `for_each` construct inside a step.
+
+### `for_each` Schema & Properties
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `from` | string | **Yes** | The `id` of a previous step whose extracted items array should be iterated over. |
+| `field` | string | No | Specific field name from each item in the referenced step to expose as `{{value}}` in the current step request template. |
+
+When iterating over step results:
+- If `field` is specified, the extracted field value is made available in dynamic templates as `{{value}}`.
+- All fields from the iterated item in `from` are also directly available as template variables (e.g. `{{item_id}}`, `{{item_title}}`).
+- In the final workflow result, the extracted fields from the loop step are automatically merged with the fields from the item being iterated over.
+
+---
+
 ## `for_each` Sequence Diagram
 
 The following sequence diagram illustrates how a two-step workflow with a `for_each` loop operates:
