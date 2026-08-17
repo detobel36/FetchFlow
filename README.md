@@ -1,4 +1,10 @@
-# Config-Driven Python Web Scraping Engine
+# FetchFlow
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
+
+[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
+[cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
+[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
 
 A lightweight, configuration-driven web scraping engine in Python designed for low resource usage, fast parsing, and execution in embedded environments (such as Kodi addons on Raspberry Pi).
 
