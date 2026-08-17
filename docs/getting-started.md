@@ -6,10 +6,13 @@ FetchFlow executes web scraping workflows defined entirely in JSON. It requires 
 
 ## Dependencies
 
-Python dependencies are required to run FetchFlow. All required dependencies are listed in [`requirements.txt`](../requirements.txt):
+Using a Python virtual environment is recommended for local development.
+Python dependencies are listed in [`requirements.txt`](../requirements.txt):
 
 ```bash
-pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
 ---
@@ -23,7 +26,7 @@ FetchFlow includes a CLI for executing and testing JSON scrapers without writing
 You can run an example config from the repository:
 
 ```bash
-python3 -m scraper_engine examples/getting_started.json
+python -m scraper_engine examples/getting_started.json
 ```
 
 **Options:**
@@ -34,7 +37,7 @@ python3 -m scraper_engine examples/getting_started.json
 Save results directly to a file:
 
 ```bash
-python3 -m scraper_engine examples/getting_started.json -o results.json
+python -m scraper_engine examples/getting_started.json -o results.json
 ```
 
 ---

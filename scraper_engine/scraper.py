@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Union, Optional
+from typing import Any
 
 from scraper_engine.config import ConfigLoader
 from scraper_engine.http import HTTPClient, HTTPXClient
@@ -10,9 +10,15 @@ class Scraper:
 
     def __init__(
         self,
-        config: Union[Dict[str, Any], str],
-        http_client: Optional[HTTPClient] = None
-    ):
+        config: dict[str, Any] | str,
+        http_client: HTTPClient | None = None,
+    ) -> None:
+        """Init.
+
+        Args:
+        config: The workflow configuration.
+        http_client: The HTTP client to use for making requests.
+        """
         if isinstance(config, str):
             if config.strip().startswith("{"):
                 self.config = ConfigLoader.load_from_json(config)
@@ -21,13 +27,15 @@ class Scraper:
         elif isinstance(config, dict):
             self.config = ConfigLoader.load_from_dict(config)
         else:
-            raise TypeError("Config must be a dict, JSON string, or file path.")
+            msg = "Config must be a dict, JSON string, or file path."
+            raise TypeError(msg)
 
         self._custom_http_client = http_client is not None
         self.http_client = http_client or HTTPXClient()
         self.engine = WorkflowEngine(self.http_client)
 
-    def run(self) -> List[Dict[str, Any]]:
+    def run(self) -> list[dict[str, Any]]:
+        """Run the scraper engine workflow."""
         try:
             return self.engine.run(self.config)
         finally:

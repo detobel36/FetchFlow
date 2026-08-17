@@ -31,10 +31,13 @@ Full feature documentation, JSON schema guides, and examples are available in th
 
 ### Installation
 
-Requirements for using the library are listed in [`requirements.txt`](requirements.txt). Install them using:
+Using a Python virtual environment is recommended. Requirements for using the
+library are listed in [`requirements.txt`](requirements.txt). Install them using:
 
 ```bash
-pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
 ### Running from CLI (Command-Line Testing)
@@ -42,13 +45,13 @@ pip install -r requirements.txt
 You can launch and test scrapers directly from the command line:
 
 ```bash
-python3 -m scraper_engine examples/ecommerce_scraper.json
+python -m scraper_engine examples/ecommerce_scraper.json
 ```
 
 Output results to a file:
 
 ```bash
-python3 -m scraper_engine examples/ecommerce_scraper.json -o results.json
+python -m scraper_engine examples/ecommerce_scraper.json -o results.json
 ```
 
 ### Usage in Python
@@ -69,5 +72,10 @@ for item in results:
 To run all unit and integration tests:
 
 ```bash
-python3 -m pytest
+PYTHONPATH=. python -m pytest
 ```
+
+## Code of Conduct
+
+Before contributing, review the [Code of Conduct](CODE_OF_CONDUCT.md) for the
+required linting and testing checks.

@@ -1,5 +1,4 @@
 import re
-from typing import List, Union, Dict, Any
 
 from scraper_engine.errors import TransformationError
 from scraper_engine.transforms.base import BaseTransformer
@@ -9,6 +8,7 @@ class TrimTransformer(BaseTransformer):
     """Trims leading and trailing whitespace."""
 
     def transform_single(self, value: str) -> str:
+        """Trims leading and trailing whitespace."""
         return value.strip()
 
 
@@ -16,6 +16,7 @@ class LowerTransformer(BaseTransformer):
     """Converts string to lowercase."""
 
     def transform_single(self, value: str) -> str:
+        """Convert string to lowercase."""
         return value.lower()
 
 
@@ -23,46 +24,68 @@ class UpperTransformer(BaseTransformer):
     """Converts string to uppercase."""
 
     def transform_single(self, value: str) -> str:
+        """Convert string to uppercase."""
         return value.upper()
 
 
 class ReplaceTransformer(BaseTransformer):
     """Replaces occurrences of a substring or pattern."""
 
-    def __init__(self, from_str: str = "", to_str: str = ""):
+    def __init__(self, from_str: str = "", to_str: str = "") -> None:
+        """Init.
+
+        Args:
+        from_str: The substring or pattern to replace.
+        to_str: The replacement string.
+        """
         self.from_str = from_str
         self.to_str = to_str
 
     def transform_single(self, value: str) -> str:
+        """Replace occurrences of a substring or pattern."""
         return value.replace(self.from_str, self.to_str)
 
 
 class SplitTransformer(BaseTransformer):
     """Splits string by delimiter, expanding 1 item into multiple items."""
 
-    def __init__(self, delimiter: str = ","):
+    def __init__(self, delimiter: str = ",") -> None:
+        """Init.
+
+        Args:
+        delimiter: The delimiter to split the string by.
+        """
         self.delimiter = delimiter
 
-    def transform_single(self, value: str) -> List[str]:
+    def transform_single(self, value: str) -> list[str]:
+        """Split string by delimiter, expanding 1 item into multiple items."""
         return value.split(self.delimiter)
 
 
 class RegexTransformer(BaseTransformer):
-    """
-    Applies regex pattern matching/extraction to string.
+    """Applies regex pattern matching/extraction to string.
+
     - If capture groups are present, returns captured group(s) or list of captures.
     - If no capture groups, returns matching substring(s).
     - If no match found, returns empty string or original value depending on configuration.
     """
 
-    def __init__(self, pattern: str, group: Union[int, None] = None):
+    def __init__(self, pattern: str, group: int | None = None) -> None:
+        """Init.
+
+        Args:
+        pattern: A regex pattern.
+        group: An optional capture group to return.
+        """
         try:
             self.regex = re.compile(pattern)
         except re.error as e:
-            raise TransformationError(f"Invalid regex pattern '{pattern}': {e}") from e
+            msg = f"Invalid regex pattern '{pattern}': {e}"
+            raise TransformationError(msg) from e
         self.group = group
 
-    def transform_single(self, value: str) -> Union[str, List[str]]:
+    def transform_single(self, value: str) -> str | list[str]:
+        """Apply regex pattern matching/extraction to string."""
         matches = self.regex.findall(value)
         if not matches:
             return ""

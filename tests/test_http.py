@@ -1,7 +1,8 @@
-import pytest
 import httpx
-from scraper_engine.http import HTTPRequest, HTTPResponse, HTTPXClient
+import pytest
+
 from scraper_engine.errors import HTTPError
+from scraper_engine.http import HTTPRequest, HTTPXClient
 
 
 def test_httpx_client_success():
