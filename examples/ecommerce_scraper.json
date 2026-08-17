@@ -1,0 +1,75 @@
+{
+  "name": "e_commerce_catalog",
+  "version": "1.0",
+  "variables": {
+    "base_url": "https://store.example.com"
+  },
+  "steps": [
+    {
+      "id": "products",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/products"
+      },
+      "extract": {
+        "selector": ".product-card",
+        "selector_type": "css"
+      },
+      "fields": {
+        "id": {
+          "selector": ".product-id",
+          "selector_type": "css",
+          "type": "text",
+          "transform": [
+            "trim"
+          ]
+        },
+        "title": {
+          "selector": "h3.title",
+          "selector_type": "css",
+          "type": "text",
+          "transform": [
+            "trim"
+          ]
+        }
+      }
+    },
+    {
+      "id": "details",
+      "for_each": {
+        "from": "products",
+        "field": "id"
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/product/{{id}}"
+      },
+      "extract": {
+        "selector": "#product-detail",
+        "selector_type": "css"
+      },
+      "fields": {
+        "price": {
+          "selector": "//span[@class='price-value']",
+          "selector_type": "xpath",
+          "type": "text",
+          "transform": [
+            "trim",
+            {
+              "regex": "([0-9,.]+)"
+            }
+          ]
+        },
+        "sku": {
+          "selector": ".sku-code",
+          "selector_type": "css",
+          "type": "text",
+          "transform": [
+            "trim",
+            "upper"
+          ]
+        }
+      }
+    }
+  ]
+}
