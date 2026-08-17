@@ -65,6 +65,66 @@ If you specify `extract` with selector `.item-card`:
 
 ---
 
+## Nested Field Extractions (Same-Page Nested Loops)
+
+When HTML containers contain nested sub-containers (e.g., product items that contain multiple sub-product options or memory variants), you can define a nested `fields` extraction block inside a parent field definition.
+
+### Same-Page Nested Extraction Diagram
+
+```mermaid
+graph TD
+    HTMLDoc["HTML Document"] -->|extract: .product| Product1["Product Container 1 (.product)"]
+    HTMLDoc -->|extract: .product| Product2["Product Container 2 (.product)"]
+
+    Product1 -->|fields.model| Model1["Model Name: iPhone 15"]
+    Product1 -->|fields.sub_products extract: .sub-product| SubP1["Sub-product 1 (.sub-product)"]
+    Product1 -->|fields.sub_products extract: .sub-product| SubP2["Sub-product 2 (.sub-product)"]
+
+    SubP1 -->|sub_id| ID1["sub_id: ip15-128"]
+    SubP1 -->|memory| Mem1["memory: 128GB"]
+
+    SubP2 -->|sub_id| ID2["sub_id: ip15-256"]
+    SubP2 -->|memory| Mem2["memory: 256GB"]
+```
+
+**JSON Configuration for Same-Page Nested Extraction:**
+
+```json
+{
+  "id": "products_step",
+  "request": {
+    "url": "https://example.com/products"
+  },
+  "extract": {
+    "selector": ".product"
+  },
+  "fields": {
+    "model": {
+      "selector": ".model-name",
+      "type": "text"
+    },
+    "sub_products": {
+      "extract": {
+        "selector": ".sub-product",
+        "selector_type": "css"
+      },
+      "fields": {
+        "sub_id": {
+          "selector": ".sub-id",
+          "type": "text"
+        },
+        "capacity": {
+          "selector": ".capacity",
+          "type": "text"
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
 ## Field Extraction Properties
 
 | Property | Type | Default | Description |
@@ -74,6 +134,8 @@ If you specify `extract` with selector `.item-card`:
 | `type` | string | `"text"` | `"text"` to extract element text, or `"attribute"` for an HTML attribute value. |
 | `attribute` | string | Required if `type="attribute"` | Name of the HTML attribute to extract (e.g. `"href"`, `"data-id"`). |
 | `transform` | array | `[]` | Pipeline of transformations to apply to extracted value(s). |
+| `extract` | object | Optional | Sub-container extraction selector for nested fields. |
+| `fields` | object | Optional | Map of sub-fields to extract recursively within each sub-container. |
 
 ---
 

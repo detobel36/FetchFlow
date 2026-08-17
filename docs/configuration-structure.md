@@ -4,6 +4,56 @@
 
 Every scraper configuration is represented as a JSON object containing global metadata, global variables, and an ordered array of workflow `steps`.
 
+### Configuration Architecture Diagram
+
+```mermaid
+classDiagram
+    class ScraperConfig {
+        +String name
+        +String version
+        +Object variables
+        +List~Step~ steps
+    }
+    class Step {
+        +String id
+        +ForEach for_each
+        +Request request
+        +Extract extract
+        +Map~String, Field~ fields
+    }
+    class ForEach {
+        +String from
+        +String field
+        +String sub_field
+    }
+    class Request {
+        +String method
+        +String url
+        +Map headers
+        +Map params
+    }
+    class Extract {
+        +String selector
+        +String selector_type
+    }
+    class Field {
+        +String selector
+        +String type
+        +String attribute
+        +List transform
+        +Extract extract
+        +Map~String, Field~ fields
+    }
+
+    ScraperConfig "1" *-- "*" Step
+    Step "0..1" *-- "1" ForEach
+    Step "0..1" *-- "1" Request
+    Step "0..1" *-- "1" Extract
+    Step "0..1" *-- "*" Field
+    Field "0..1" *-- "1" Extract
+    Field "0..1" *-- "*" Field
+```
+
 ### Schema Overview
 
 | Key | Type | Required | Description |
@@ -69,8 +119,8 @@ Each step defines a stage in the scraping workflow.
 | `id` | string | **Yes** | Step identifier. Output is stored under `id` for subsequent steps. |
 | `request` | object | No | HTTP request parameters (`url`, `method`, `headers`, `params`). See [HTTP Requests](requests.md). |
 | `extract` | object | No | Root element selector for container items. See [Extraction & Selectors](extraction-and-selectors.md). |
-| `fields` | object | No | Extraction rules for individual fields. See [Extraction & Selectors](extraction-and-selectors.md). |
-| `for_each` | object | No | Iterates over previous step results. See [Workflows & Loops](workflows-and-loops.md). |
+| `fields` | object | No | Extraction rules for individual or nested fields. See [Extraction & Selectors](extraction-and-selectors.md). |
+| `for_each` | object | No | Iterates over previous step results or sub-items. See [Workflows & Loops](workflows-and-loops.md). |
 
 ---
 
@@ -79,7 +129,7 @@ Each step defines a stage in the scraping workflow.
 To learn more about specific configuration sections:
 
 1. **[HTTP Requests](requests.md)** - Detailed guide on methods (`GET`, `POST`, `PUT`), headers, URL params, and dynamic templating.
-2. **[Extraction and Selectors](extraction-and-selectors.md)** - Container extraction vs field extraction, CSS vs XPath, and HTML attributes.
+2. **[Extraction and Selectors](extraction-and-selectors.md)** - Container extraction vs field extraction, same-page nested loops, CSS vs XPath, and HTML attributes.
 3. **[Transformations Pipeline](transformations.md)** - Transforming extracted text values with built-in or custom transformers.
 4. **[Workflows & Loops](workflows-and-loops.md)** - Building multi-step scrapers and running `for_each` loops across results.
 

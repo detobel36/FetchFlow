@@ -1,6 +1,7 @@
 import httpx
 
 from scraper_engine import Scraper
+from scraper_engine.config.validator import ConfigValidator
 
 
 def test_workflow_execution():
@@ -107,6 +108,7 @@ def test_workflow_execution():
     }
 
     from scraper_engine.http import HTTPXClient
+
     client_wrapper = HTTPXClient(client=http_client)
     scraper = Scraper(config=config, http_client=client_wrapper)
     results = scraper.run()
@@ -114,3 +116,136 @@ def test_workflow_execution():
     assert len(results) == 2
     assert results[0] == {"id": "101", "name": "Phone", "price": "599"}
     assert results[1] == {"id": "102", "name": "Laptop", "price": "1299"}
+
+
+def test_nested_loops_same_page_and_for_each_rest():
+    catalog_html = """
+    <html>
+        <body>
+            <div class="products">
+                <span class="model">iPhone 15</span>
+                <div class="sub-product">
+                    <span class="sub-id">ip15-128</span>
+                    <span class="memory">128GB</span>
+                </div>
+                <div class="sub-product">
+                    <span class="sub-id">ip15-256</span>
+                    <span class="memory">256GB</span>
+                </div>
+            </div>
+            <div class="products">
+                <span class="model">Galaxy S24</span>
+                <div class="sub-product">
+                    <span class="sub-id">s24-256</span>
+                    <span class="memory">256GB</span>
+                </div>
+            </div>
+        </body>
+    </html>
+    """
+
+    res_ip15_128 = '<div class="rest-data"><span class="price">$799</span></div>'
+    res_ip15_256 = '<div class="rest-data"><span class="price">$899</span></div>'
+    res_s24_256 = '<div class="rest-data"><span class="price">$849</span></div>'
+
+    def mock_handler(request: httpx.Request):
+        url = str(request.url)
+        if url == "https://api.example.com/catalog":
+            return httpx.Response(200, text=catalog_html, request=request)
+        if "ip15-128" in url:
+            return httpx.Response(200, text=res_ip15_128, request=request)
+        if "ip15-256" in url:
+            return httpx.Response(200, text=res_ip15_256, request=request)
+        if "s24-256" in url:
+            return httpx.Response(200, text=res_s24_256, request=request)
+        return httpx.Response(404, text=f"Not Found: {url}", request=request)
+
+    transport = httpx.MockTransport(mock_handler)
+    http_client = httpx.Client(transport=transport)
+
+    config = {
+        "name": "nested_loop_scraper",
+        "variables": {
+            "base_url": "https://api.example.com",
+        },
+        "steps": [
+            {
+                "id": "fetch_catalog",
+                "request": {
+                    "method": "GET",
+                    "url": "{{base_url}}/catalog",
+                },
+                "extract": {
+                    "selector": ".products",
+                    "selector_type": "css",
+                },
+                "fields": {
+                    "model": {
+                        "selector": ".model",
+                        "type": "text",
+                    },
+                    "sub_products": {
+                        "extract": {
+                            "selector": ".sub-product",
+                            "selector_type": "css",
+                        },
+                        "fields": {
+                            "sub_id": {
+                                "selector": ".sub-id",
+                                "type": "text",
+                            },
+                            "memory": {
+                                "selector": ".memory",
+                                "type": "text",
+                            },
+                        },
+                    },
+                },
+            },
+            {
+                "id": "fetch_sub_product_rest",
+                "for_each": {
+                    "from": "fetch_catalog",
+                    "field": "sub_products",
+                },
+                "request": {
+                    "method": "GET",
+                    "url": "{{base_url}}/subproduct/{{sub_id}}",
+                },
+                "extract": {
+                    "selector": ".rest-data",
+                    "selector_type": "css",
+                },
+                "fields": {
+                    "price": {
+                        "selector": ".price",
+                        "type": "text",
+                    },
+                },
+            },
+        ],
+    }
+
+    ConfigValidator.validate(config)
+
+    from scraper_engine.http import HTTPXClient
+
+    client_wrapper = HTTPXClient(client=http_client)
+    scraper = Scraper(config=config, http_client=client_wrapper)
+    results = scraper.run()
+
+    assert len(results) == 3
+    assert results[0]["model"] == "iPhone 15"
+    assert results[0]["sub_id"] == "ip15-128"
+    assert results[0]["memory"] == "128GB"
+    assert results[0]["price"] == "$799"
+
+    assert results[1]["model"] == "iPhone 15"
+    assert results[1]["sub_id"] == "ip15-256"
+    assert results[1]["memory"] == "256GB"
+    assert results[1]["price"] == "$899"
+
+    assert results[2]["model"] == "Galaxy S24"
+    assert results[2]["sub_id"] == "s24-256"
+    assert results[2]["memory"] == "256GB"
+    assert results[2]["price"] == "$849"

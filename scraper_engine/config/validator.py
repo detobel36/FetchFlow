@@ -48,6 +48,7 @@ SCRAPER_CONFIG_SCHEMA: dict[str, Any] = {
             "properties": {
                 "from": {"type": "string"},
                 "field": {"type": "string"},
+                "sub_field": {"type": "string"},
             },
             "additionalProperties": False,
         },
@@ -79,23 +80,42 @@ SCRAPER_CONFIG_SCHEMA: dict[str, Any] = {
         },
         "field": {
             "type": "object",
-            "required": ["selector"],
-            "properties": {
-                "selector": {"type": "string"},
-                "selector_type": {"type": "string", "enum": ["css", "xpath"], "default": "css"},
-                "type": {"type": "string", "enum": ["text", "attribute"], "default": "text"},
-                "attribute": {"type": "string"},
-                "transform": {
-                    "type": "array",
-                    "items": {
-                        "oneOf": [
-                            {"type": "string"},
-                            {"type": "object"},
-                        ],
+            "oneOf": [
+                {
+                    "type": "object",
+                    "required": ["selector"],
+                    "properties": {
+                        "selector": {"type": "string"},
+                        "selector_type": {"type": "string", "enum": ["css", "xpath"], "default": "css"},
+                        "type": {"type": "string", "enum": ["text", "attribute"], "default": "text"},
+                        "attribute": {"type": "string"},
+                        "transform": {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    {"type": "string"},
+                                    {"type": "object"},
+                                ],
+                            },
+                        },
                     },
+                    "additionalProperties": False,
                 },
-            },
-            "additionalProperties": False,
+                {
+                    "type": "object",
+                    "required": ["fields"],
+                    "properties": {
+                        "extract": {"$ref": "#/definitions/extract"},
+                        "selector": {"type": "string"},
+                        "selector_type": {"type": "string", "enum": ["css", "xpath"], "default": "css"},
+                        "fields": {
+                            "type": "object",
+                            "additionalProperties": {"$ref": "#/definitions/field"},
+                        },
+                    },
+                    "additionalProperties": False,
+                },
+            ],
         },
     },
 }
