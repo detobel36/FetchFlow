@@ -69,6 +69,26 @@ If you specify `extract` with selector `.item-card`:
 
 When HTML containers contain nested sub-containers (e.g., product items that contain multiple sub-product options or memory variants), you can define a nested `fields` extraction block inside a parent field definition.
 
+### Same-Page Nested Extraction Diagram
+
+```mermaid
+graph TD
+    HTMLDoc["HTML Document"] -->|extract: .product| Product1["Product Container 1 (.product)"]
+    HTMLDoc -->|extract: .product| Product2["Product Container 2 (.product)"]
+
+    Product1 -->|fields.model| Model1["Model Name: iPhone 15"]
+    Product1 -->|fields.sub_products extract: .sub-product| SubP1["Sub-product 1 (.sub-product)"]
+    Product1 -->|fields.sub_products extract: .sub-product| SubP2["Sub-product 2 (.sub-product)"]
+
+    SubP1 -->|sub_id| ID1["sub_id: ip15-128"]
+    SubP1 -->|memory| Mem1["memory: 128GB"]
+
+    SubP2 -->|sub_id| ID2["sub_id: ip15-256"]
+    SubP2 -->|memory| Mem2["memory: 256GB"]
+```
+
+**JSON Configuration for Same-Page Nested Extraction:**
+
 ```json
 {
   "id": "products_step",
@@ -79,8 +99,8 @@ When HTML containers contain nested sub-containers (e.g., product items that con
     "selector": ".product"
   },
   "fields": {
-    "title": {
-      "selector": ".product-title",
+    "model": {
+      "selector": ".model-name",
       "type": "text"
     },
     "sub_products": {
