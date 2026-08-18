@@ -199,12 +199,14 @@ class DebugSession:
             container_sel = ext_cfg.get("selector") if ext_cfg else None
             container_sel_type = ext_cfg.get("selector_type", "css") if ext_cfg else "css"
             fields_cfg = step_cfg.get("fields") if step_cfg else None
+            req_url = trace.get("request", {}).get("url") if trace.get("request") else None
 
             highlighted_html = highlight_html_elements(
                 html_content=raw_html,
                 container_selector=container_sel,
                 container_selector_type=container_sel_type,
                 fields_config=fields_cfg,
+                base_url=req_url,
             )
 
         return {

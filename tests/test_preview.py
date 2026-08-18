@@ -74,6 +74,7 @@ def test_highlight_html_elements():
         container_selector=".product",
         container_selector_type="css",
         fields_config={"price": {"selector": ".price", "selector_type": "css"}},
+        base_url="https://example.com/store/items",
     )
 
     assert 'data-debugger-container="true"' in highlighted
@@ -81,6 +82,7 @@ def test_highlight_html_elements():
     assert 'data-debugger-field="price"' in highlighted
     assert 'data-debugger-field-selector=".price"' in highlighted
     assert "debugger-preview-styles" in highlighted
+    assert '<base href="https://example.com/store/items">' in highlighted
 
 
 def test_debug_session_navigation_and_caching():

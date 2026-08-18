@@ -103,6 +103,7 @@ def highlight_html_elements(
     container_selector: str | None = None,
     container_selector_type: str = "css",
     fields_config: dict[str, Any] | None = None,
+    base_url: str | None = None,
 ) -> str:
     """Highlight container and field elements in HTML content for visual debugger preview."""
     if not html_content or not html_content.strip():
@@ -120,13 +121,18 @@ def highlight_html_elements(
         _highlight_fields(tree, fields_config, container_selector_type)
 
     head_elem = tree.find("head")
-    inject_frag = lxml.html.fragment_fromstring(f"<div>{INJECTED_PREVIEW_STYLES}</div>")
+    if head_elem is None:
+        head_elem = lxml.html.Element("head")
+        tree.insert(0, head_elem)
 
-    if head_elem is not None:
-        for child in list(inject_frag):
-            head_elem.append(child)
-    else:
-        tree.append(inject_frag)
+    # Inject <base href="..."> if base_url provided and no <base> tag exists
+    if base_url and tree.find(".//base") is None:
+        base_elem = lxml.html.Element("base", href=base_url)
+        head_elem.insert(0, base_elem)
+
+    inject_frag = lxml.html.fragment_fromstring(f"<div>{INJECTED_PREVIEW_STYLES}</div>")
+    for child in list(inject_frag):
+        head_elem.append(child)
 
     try:
         return lxml.html.tostring(tree, encoding="unicode", method="html")
