@@ -184,7 +184,7 @@ class DebugSession:
     def get_state(self) -> dict[str, Any]:
         """Construct full state response object for the UI."""
         total_steps = len(self.steps_config)
-        step_cfg = self.steps_config[self.current_step_index] if total_steps > 0 else None
+        step_cfg = self.steps_config[self.current_step_index] if 0 <= self.current_step_index < total_steps else None
         step_id = step_cfg.get("id", "") if step_cfg else ""
 
         line_number = find_key_line_number(self.raw_json, ["steps", step_id]) if step_id else 1
