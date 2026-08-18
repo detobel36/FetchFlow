@@ -26,3 +26,7 @@ Welcome to the **FetchFlow** wiki! FetchFlow is a lightweight, configuration-dri
    - Passing extracted data across sequential steps
    - Iterating over step results with `for_each` loops
    - Variable scope and precedence
+7. [Scraper Preview & Debugger](preview-debugger.md)
+   - Interactive developer tool overview
+   - Launching via CLI (`python -m preview`)
+   - Step navigation, element highlighting, and loop iteration debugging

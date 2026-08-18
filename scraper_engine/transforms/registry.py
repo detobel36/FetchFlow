@@ -86,13 +86,38 @@ class TransformerRegistry:
             raise TransformationError(msg) from e
 
     @classmethod
+    def apply_pipeline_with_trace(
+        cls, values: list[str], pipeline_specs: list[str | dict[str, Any]],
+    ) -> tuple[list[str], list[dict[str, Any]]]:
+        """Run a list of values through transformations and return trace details.
+
+        Returns:
+            Tuple of (final_values, trace_steps)
+            where trace_steps is a list of dicts:
+            [{"spec": spec, "name": transformer_name, "input": [...], "output": [...]}]
+        """
+        current = values
+        trace: list[dict[str, Any]] = []
+
+        for spec in pipeline_specs:
+            name, _ = cls._parse_spec(spec)
+            transformer = cls.create(spec)
+            input_vals = list(current)
+            current = transformer.apply(current)
+            trace.append({
+                "spec": spec,
+                "name": name,
+                "input": input_vals,
+                "output": list(current),
+            })
+
+        return current, trace
+
+    @classmethod
     def apply_pipeline(cls, values: list[str], pipeline_specs: list[str | dict[str, Any]]) -> list[str]:
         """Run a list of values through a sequence of transformation steps."""
-        current = values
-        for spec in pipeline_specs:
-            transformer = cls.create(spec)
-            current = transformer.apply(current)
-        return current
+        final_vals, _ = cls.apply_pipeline_with_trace(values, pipeline_specs)
+        return final_vals
 
 
 # Register built-in transformers
