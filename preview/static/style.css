@@ -97,17 +97,29 @@ body {
 /* Main Split Panel Workspace */
 .workspace {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: var(--left-panel-width, 1fr) 6px 1fr;
   flex: 1;
   overflow: hidden;
   background-color: #12131c;
+}
+
+.panel-resizer {
+  width: 6px;
+  background-color: #2d3748;
+  cursor: col-resize;
+  transition: background-color 0.15s ease;
+  user-select: none;
+  z-index: 10;
+}
+
+.panel-resizer:hover, .panel-resizer.resizing {
+  background-color: #63b3ed;
 }
 
 .panel {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-right: 1px solid #2d3748;
 }
 
 .panel-header {

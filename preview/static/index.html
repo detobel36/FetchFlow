@@ -31,7 +31,7 @@
     </header>
 
     <!-- Main Workspace Split-Panel -->
-    <main class="workspace">
+    <main id="workspace" class="workspace">
       <!-- Left Panel: JSON Editor -->
       <section class="panel panel-left">
         <div class="panel-header">
@@ -51,6 +51,9 @@
           <textarea id="json-editor"></textarea>
         </div>
       </section>
+
+      <!-- Draggable Panel Resizer -->
+      <div id="panel-resizer" class="panel-resizer" title="Drag to resize panels"></div>
 
       <!-- Right Panel: Page & Response Preview -->
       <section class="panel panel-right">

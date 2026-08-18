@@ -102,6 +102,53 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  function setupResizer() {
+    const resizer = document.getElementById("panel-resizer");
+    const workspace = document.getElementById("workspace");
+    if (!resizer || !workspace) return;
+
+    let isDragging = false;
+
+    resizer.addEventListener("mousedown", function () {
+      isDragging = true;
+      resizer.classList.add("resizing");
+      document.body.style.userSelect = "none";
+      document.body.style.cursor = "col-resize";
+    });
+
+    document.addEventListener("mousemove", function (e) {
+      if (!isDragging) return;
+
+      const rect = workspace.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left;
+      const totalWidth = rect.width;
+
+      const minWidth = totalWidth * 0.15;
+      const maxWidth = totalWidth * 0.85;
+
+      const clampedX = Math.max(minWidth, Math.min(maxWidth, offsetX));
+      const percentage = (clampedX / totalWidth) * 100;
+
+      workspace.style.setProperty("--left-panel-width", percentage + "%");
+
+      if (editor) {
+        editor.refresh();
+      }
+    });
+
+    document.addEventListener("mouseup", function () {
+      if (isDragging) {
+        isDragging = false;
+        resizer.classList.remove("resizing");
+        document.body.style.userSelect = "";
+        document.body.style.cursor = "";
+        if (editor) {
+          editor.refresh();
+        }
+      }
+    });
+  }
+
   async function apiCall(endpoint, data = null) {
     try {
       const options = {
@@ -353,6 +400,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Init
   initEditor();
   setupTabs();
+  setupResizer();
 
   // Load initial session state on boot
   handleAction(null, () => apiCall("/api/session/load", { config_json: editor.getValue() }));
