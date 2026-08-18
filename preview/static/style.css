@@ -68,6 +68,12 @@ body {
   transition: background 0.15s ease;
 }
 
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
 .btn-primary { background: #3182ce; color: #fff; }
 .btn-primary:hover { background: #2b6cb0; }
 

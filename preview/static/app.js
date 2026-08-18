@@ -179,20 +179,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateStatus("Ready", "success");
 
-    // Highlight active step line in CodeMirror
     highlightActiveStepLine(state.line_number);
 
-    // Step indicators
+    // Step indicators and button disabled states
     const currentStepNum = state.total_steps > 0 ? state.current_step_index + 1 : 0;
     document.getElementById("step-counter").textContent = `Step ${currentStepNum} / ${state.total_steps}`;
     document.getElementById("step-id-badge").textContent = state.step_id || "none";
 
-    // Loop iteration indicators
+    const isFirstStep = state.current_step_index === 0 && state.current_iteration_index === 0;
+    const isLastStep =
+      state.total_steps === 0 ||
+      (state.current_step_index >= state.total_steps - 1 &&
+        state.current_iteration_index >= state.total_iterations - 1);
+
+    document.getElementById("btn-prev-step").disabled = isFirstStep;
+    document.getElementById("btn-next-step").disabled = isLastStep;
+
+    // Loop iteration indicators and button disabled states
     const iterControls = document.getElementById("iteration-controls");
     if (state.total_iterations > 1) {
       iterControls.classList.remove("hidden");
       document.getElementById("iter-counter").textContent = `${state.current_iteration_index + 1} / ${state.total_iterations}`;
       document.getElementById("loop-context-badge").textContent = "Context: " + JSON.stringify(state.loop_context || {});
+
+      document.getElementById("btn-prev-iter").disabled = state.current_iteration_index === 0;
+      document.getElementById("btn-next-iter").disabled = state.current_iteration_index >= state.total_iterations - 1;
     } else {
       iterControls.classList.add("hidden");
     }
@@ -244,7 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (ftrace.transform_trace && ftrace.transform_trace.length > 0) {
           html += "Pipeline:\n";
           ftrace.transform_trace.forEach((step, i) => {
-            html += `  [${i+1}] ${step.name} (${JSON.stringify(step.spec)}) -> ${JSON.stringify(step.output)}\n`;
+            html += `  [${i + 1}] ${step.name} (${JSON.stringify(step.spec)}) -> ${JSON.stringify(step.output)}\n`;
           });
         }
         html += `Final Value: ${JSON.stringify(ftrace.final_value)}`;
