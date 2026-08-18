@@ -2,6 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let editor = null;
   let activeLineMarker = null;
 
+  const LOCAL_STORAGE_KEY = "scraper_config_draft";
+
   const defaultSampleConfig = {
     name: "e_commerce_catalog",
     version: "1.0",
@@ -72,7 +74,17 @@ document.addEventListener("DOMContentLoaded", function () {
       tabSize: 2,
       lineWrapping: true
     });
-    editor.setValue(JSON.stringify(defaultSampleConfig, null, 2));
+
+    const savedDraft = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedDraft && savedDraft.trim()) {
+      editor.setValue(savedDraft);
+    } else {
+      editor.setValue(JSON.stringify(defaultSampleConfig, null, 2));
+    }
+
+    editor.on("change", function () {
+      localStorage.setItem(LOCAL_STORAGE_KEY, editor.getValue());
+    });
   }
 
   function setupTabs() {
@@ -109,6 +121,32 @@ document.addEventListener("DOMContentLoaded", function () {
     const badge = document.getElementById("session-status");
     badge.textContent = statusText;
     badge.className = "status-badge badge-" + type;
+  }
+
+  function setGlobalButtonsDisabled(disabled) {
+    const btns = document.querySelectorAll(".btn");
+    btns.forEach(b => {
+      b.disabled = disabled;
+    });
+  }
+
+  async function handleAction(triggerBtn, actionFn) {
+    const originalText = triggerBtn ? triggerBtn.textContent : "";
+    if (triggerBtn) {
+      triggerBtn.textContent = originalText + " ⏳";
+    }
+
+    setGlobalButtonsDisabled(true);
+    updateStatus("Executing...", "running");
+
+    try {
+      const state = await actionFn();
+      renderState(state);
+    } finally {
+      if (triggerBtn) {
+        triggerBtn.textContent = originalText;
+      }
+    }
   }
 
   function updateValidationAlert(valResult) {
@@ -168,12 +206,17 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function renderState(state) {
-    if (!state) return;
+    if (!state) {
+      updateStatus("Error", "error");
+      setGlobalButtonsDisabled(false);
+      return;
+    }
 
     updateValidationAlert(state.validation);
 
     if (state.validation && !state.validation.valid) {
       updateStatus("Invalid Config", "error");
+      setGlobalButtonsDisabled(false);
       return;
     }
 
@@ -192,6 +235,7 @@ document.addEventListener("DOMContentLoaded", function () {
       (state.current_step_index >= state.total_steps - 1 &&
         state.current_iteration_index >= state.total_iterations - 1);
 
+    setGlobalButtonsDisabled(false);
     document.getElementById("btn-prev-step").disabled = isFirstStep;
     document.getElementById("btn-next-step").disabled = isLastStep;
 
@@ -265,48 +309,45 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Event Listeners
-  document.getElementById("btn-apply").addEventListener("click", async () => {
-    const jsonStr = editor.getValue();
-    const state = await apiCall("/api/session/load", { config_json: jsonStr });
-    renderState(state);
+  // Event Listeners with Loading States
+  const btnApply = document.getElementById("btn-apply");
+  btnApply.addEventListener("click", () => {
+    handleAction(btnApply, () => apiCall("/api/session/load", { config_json: editor.getValue() }));
   });
 
-  document.getElementById("btn-run").addEventListener("click", async () => {
-    const jsonStr = editor.getValue();
-    const state = await apiCall("/api/session/load", { config_json: jsonStr });
-    renderState(state);
+  const btnRun = document.getElementById("btn-run");
+  btnRun.addEventListener("click", () => {
+    handleAction(btnRun, () => apiCall("/api/session/load", { config_json: editor.getValue() }));
   });
 
-  document.getElementById("btn-rerun").addEventListener("click", async () => {
-    const jsonStr = editor.getValue();
-    const state = await apiCall("/api/session/rerun", { config_json: jsonStr });
-    renderState(state);
+  const btnRerun = document.getElementById("btn-rerun");
+  btnRerun.addEventListener("click", () => {
+    handleAction(btnRerun, () => apiCall("/api/session/rerun", { config_json: editor.getValue() }));
   });
 
-  document.getElementById("btn-restart").addEventListener("click", async () => {
-    const state = await apiCall("/api/session/restart");
-    renderState(state);
+  const btnRestart = document.getElementById("btn-restart");
+  btnRestart.addEventListener("click", () => {
+    handleAction(btnRestart, () => apiCall("/api/session/restart"));
   });
 
-  document.getElementById("btn-next-step").addEventListener("click", async () => {
-    const state = await apiCall("/api/session/next");
-    renderState(state);
+  const btnNextStep = document.getElementById("btn-next-step");
+  btnNextStep.addEventListener("click", () => {
+    handleAction(btnNextStep, () => apiCall("/api/session/next"));
   });
 
-  document.getElementById("btn-prev-step").addEventListener("click", async () => {
-    const state = await apiCall("/api/session/previous");
-    renderState(state);
+  const btnPrevStep = document.getElementById("btn-prev-step");
+  btnPrevStep.addEventListener("click", () => {
+    handleAction(btnPrevStep, () => apiCall("/api/session/previous"));
   });
 
-  document.getElementById("btn-next-iter").addEventListener("click", async () => {
-    const state = await apiCall("/api/session/next-iteration");
-    renderState(state);
+  const btnNextIter = document.getElementById("btn-next-iter");
+  btnNextIter.addEventListener("click", () => {
+    handleAction(btnNextIter, () => apiCall("/api/session/next-iteration"));
   });
 
-  document.getElementById("btn-prev-iter").addEventListener("click", async () => {
-    const state = await apiCall("/api/session/previous-iteration");
-    renderState(state);
+  const btnPrevIter = document.getElementById("btn-prev-iter");
+  btnPrevIter.addEventListener("click", () => {
+    handleAction(btnPrevIter, () => apiCall("/api/session/previous-iteration"));
   });
 
   // Init
@@ -314,8 +355,5 @@ document.addEventListener("DOMContentLoaded", function () {
   setupTabs();
 
   // Load initial session state on boot
-  (async () => {
-    const initialState = await apiCall("/api/session/load", { config_json: editor.getValue() });
-    renderState(initialState);
-  })();
+  handleAction(null, () => apiCall("/api/session/load", { config_json: editor.getValue() }));
 });
