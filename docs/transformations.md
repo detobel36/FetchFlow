@@ -2,7 +2,7 @@
 
 ## Overview
 
-After raw text or attribute values are extracted from HTML, FetchFlow allows running them through a chain of string transformers specified in `transform`.
+After raw text or attribute values are extracted from HTML, Jexflow allows running them through a chain of string transformers specified in `transform`.
 
 Transformations are configured as an ordered array of transformer keywords or parameter objects.
 
