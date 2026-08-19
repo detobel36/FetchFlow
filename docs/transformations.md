@@ -18,6 +18,10 @@ Transformations are configured as an ordered array of transformer keywords or pa
   - *Example:* `"Hello World"` &rarr; `"hello world"`
 - **`upper`**: Converts text to uppercase.
   - *Example:* `"hello world"` &rarr; `"HELLO WORLD"`
+- **`url_encode`**: Encodes text for inclusion in URLs.
+  - *Example:* `"hello world & foo=bar"` &rarr; `"hello%20world%20%26%20foo%3Dbar"`
+- **`space_to_dash`**: Replaces spaces with dashes.
+  - *Example:* `"like this for exemple"` &rarr; `"like-this-for-exemple"`
 
 ### 2. Parameterized Transformers
 

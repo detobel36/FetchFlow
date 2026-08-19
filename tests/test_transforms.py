@@ -31,3 +31,19 @@ def test_regex():
         [{"regex": "([0-9,.]+)"}],
     )
     assert res == ["19.99"]
+
+
+def test_url_encode():
+    res = TransformerRegistry.apply_pipeline(
+        ["hello world & foo=bar"],
+        ["url_encode"],
+    )
+    assert res == ["hello%20world%20%26%20foo%3Dbar"]
+
+
+def test_space_to_dash():
+    res = TransformerRegistry.apply_pipeline(
+        ["like this for exemple"],
+        ["space_to_dash"],
+    )
+    assert res == ["like-this-for-exemple"]
