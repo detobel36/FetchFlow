@@ -26,6 +26,7 @@ Full feature documentation, JSON schema guides, and examples are available in th
 - [Extraction & Selectors](docs/extraction-and-selectors.md)
 - [Transformations](docs/transformations.md)
 - [Workflows & Loops](docs/workflows-and-loops.md)
+- [Using as a Python Library](docs/python-library-guide.md)
 
 ## Quick Start
 
