@@ -2,7 +2,7 @@
 
 ## Overview
 
-FetchFlow executes web scraping workflows defined entirely in JSON. It requires minimal dependencies and can be run programmatically in Python or via the Command Line Interface (CLI).
+Jexflow executes web scraping workflows defined entirely in JSON. It requires minimal dependencies and can be run programmatically in Python or via the Command Line Interface (CLI).
 
 ## Dependencies
 
@@ -19,7 +19,7 @@ python -m pip install -r requirements.txt
 
 ## Running Scrapers via CLI
 
-FetchFlow includes a CLI for executing and testing JSON scrapers without writing Python code.
+Jexflow includes a CLI for executing and testing JSON scrapers without writing Python code.
 
 ### Usage & Example
 
@@ -42,7 +42,7 @@ python -m scraper_engine examples/getting_started.json -o results.json
 
 ---
 
-## Using FetchFlow in Python
+## Using Jexflow in Python
 
 Execute scrapers inside Python applications:
 

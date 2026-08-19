@@ -76,7 +76,7 @@ classDiagram
   "version": "1.0",
   "variables": {
     "base_url": "https://example.com",
-    "user_agent": "FetchFlow-Scraper/1.0"
+    "user_agent": "Jexflow-Scraper/1.0"
   },
   "steps": [
     {

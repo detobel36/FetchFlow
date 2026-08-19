@@ -1,6 +1,6 @@
 # Code of Conduct
 
-FetchFlow contributors are expected to keep changes readable, tested, and easy
+Jexflow contributors are expected to keep changes readable, tested, and easy
 to review.
 
 ## Before Opening a Pull Request

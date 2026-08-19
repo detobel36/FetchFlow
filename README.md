@@ -1,4 +1,4 @@
-# FetchFlow
+# Jexflow
 
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
 

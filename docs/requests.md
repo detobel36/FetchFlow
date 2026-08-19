@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `request` object in a step specifies how to perform HTTP requests. FetchFlow uses `httpx` to execute HTTP calls efficiently and supports both HTML web pages and REST API JSON endpoints.
+The `request` object in a step specifies how to perform HTTP requests. Jexflow uses `httpx` to execute HTTP calls efficiently and supports both HTML web pages and REST API JSON endpoints.
 
 ## Request Properties
 

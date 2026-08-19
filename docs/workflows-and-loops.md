@@ -2,13 +2,13 @@
 
 ## Sequential Execution & Scope
 
-Steps in FetchFlow execute sequentially. Output from each step is stored under its `id` and can be passed to subsequent steps.
+Steps in Jexflow execute sequentially. Output from each step is stored under its `id` and can be passed to subsequent steps.
 
 ---
 
 ## Nested Loops on the Same Page
 
-FetchFlow supports extracting nested loops on the same page. For example, when inspecting a page containing multiple product cards (`.products`), each product might contain nested sub-products or options (`.sub-product`, memory capacities, variants, etc.).
+Jexflow supports extracting nested loops on the same page. For example, when inspecting a page containing multiple product cards (`.products`), each product might contain nested sub-products or options (`.sub-product`, memory capacities, variants, etc.).
 
 You can extract nested structures by defining a field containing its own `fields` (and optional `extract` or `selector`):
 

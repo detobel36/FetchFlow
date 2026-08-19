@@ -1,6 +1,6 @@
-# FetchFlow Documentation & Wiki
+# Jexflow Documentation & Wiki
 
-Welcome to the **FetchFlow** wiki! FetchFlow is a lightweight, configuration-driven web scraping engine written in Python. It allows you to build complete scraping workflows using structured JSON configuration files.
+Welcome to the **Jexflow** wiki! Jexflow is a lightweight, configuration-driven web scraping engine written in Python. It allows you to build complete scraping workflows using structured JSON configuration files.
 
 ## Wiki Navigation
 

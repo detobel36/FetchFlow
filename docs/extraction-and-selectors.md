@@ -2,7 +2,7 @@
 
 ## Overview
 
-FetchFlow supports parsing HTML pages using `lxml` (via CSS and XPath) as well as REST API JSON structures (via JSONPath).
+Jexflow supports parsing HTML pages using `lxml` (via CSS and XPath) as well as REST API JSON structures (via JSONPath).
 
 Extraction occurs in two distinct stages:
 1. **Container Extraction (`extract`)**: Identifies repeating HTML block elements or JSON list items in a response.
