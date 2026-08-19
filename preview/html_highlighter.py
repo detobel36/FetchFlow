@@ -156,10 +156,9 @@ def highlight_html_elements(
         head_elem = lxml.html.Element("head")
         tree.insert(0, head_elem)
 
-    # Inject <base href="..."> if base_url provided and no <base> tag exists
-    if base_url and tree.find(".//base") is None:
-        base_elem = lxml.html.Element("base", href=base_url)
-        head_elem.insert(0, base_elem)
+    # If a <base> tag exists, remove it so relative proxy paths (/api/proxy) resolve against local server origin
+    for existing_base in tree.findall(".//base"):
+        existing_base.getparent().remove(existing_base)
 
     inject_frag = lxml.html.fragment_fromstring(f"<div>{INJECTED_PREVIEW_STYLES}</div>")
     for child in list(inject_frag):

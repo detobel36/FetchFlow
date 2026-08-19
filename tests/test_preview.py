@@ -64,6 +64,7 @@ def test_find_key_line_number():
 
 def test_highlight_html_elements():
     html_input = """<html>
+        <head><base href="https://example.com/store/items"></head>
         <body>
             <div class="product"><span class="price">$10</span></div>
             <img src="/image.png">
@@ -84,7 +85,7 @@ def test_highlight_html_elements():
     assert 'data-debugger-field="price"' in highlighted
     assert 'data-debugger-field-selector=".price"' in highlighted
     assert "debugger-preview-styles" in highlighted
-    assert '<base href="https://example.com/store/items">' in highlighted
+    assert "<base" not in highlighted
     assert "/api/proxy?url=https%3A%2F%2Fexample.com%2Fimage.png" in highlighted
     assert "/api/proxy?url=https%3A%2F%2Fother.com%2Fpage" in highlighted
 
