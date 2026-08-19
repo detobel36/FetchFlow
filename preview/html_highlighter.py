@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+from urllib.parse import quote, urljoin
 
 import lxml.html
 
@@ -98,6 +99,34 @@ def _highlight_fields(
             logger.debug("Field highlighting skipped for %s: %s", field_name, err)
 
 
+def _rewrite_urls_for_proxy(tree: Any, base_url: str | None) -> None:  # noqa: ANN401
+    """Rewrite element URLs to route through /api/proxy to bypass CORS policy."""
+    if not base_url:
+        return
+
+    # Attributes to rewrite if present: (tag_name, attr_name)
+    elements_to_rewrite = [
+        ("img", "src"),
+        ("script", "src"),
+        ("iframe", "src"),
+        ("source", "src"),
+        ("link", "href"),
+        ("a", "href"),
+        ("form", "action"),
+    ]
+
+    ignore_prefixes = ("/api/proxy", "data:", "#", "javascript:")
+    for tag, attr in elements_to_rewrite:
+        for elem in tree.iter(tag):
+            val = elem.get(attr)
+            if not val or val.startswith(ignore_prefixes):
+                continue
+            full_url = urljoin(base_url, val)
+            if full_url.startswith(("http://", "https://")):
+                proxied = f"/api/proxy?url={quote(full_url, safe='')}"
+                elem.set(attr, proxied)
+
+
 def highlight_html_elements(
     html_content: str,
     container_selector: str | None = None,
@@ -119,6 +148,8 @@ def highlight_html_elements(
 
     if fields_config:
         _highlight_fields(tree, fields_config, container_selector_type)
+
+    _rewrite_urls_for_proxy(tree, base_url)
 
     head_elem = tree.find("head")
     if head_elem is None:

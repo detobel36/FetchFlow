@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import FastAPI, HTTPException, Response
+import httpx
+from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -101,6 +102,37 @@ def get_preview_html() -> Response:
     fallback = "<html><body><p>No HTML preview available.</p></body></html>"
     html = state.get("highlighted_html") or state.get("raw_html") or fallback
     return Response(content=html, media_type="text/html")
+
+
+@app.get("/api/proxy")
+async def proxy_url(
+    url: Annotated[str, Query(description="Target URL to fetch via proxy")],
+) -> Response:
+    """Proxy HTTP GET request to bypass CORS restrictions for preview."""
+    if not url or not url.startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="Invalid URL scheme. Must start with http:// or https://")
+
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=10.0) as client:
+            resp = await client.get(url)
+            headers_to_exclude = {
+                "content-encoding",
+                "content-length",
+                "transfer-encoding",
+                "content-security-policy",
+                "x-frame-options",
+            }
+            response_headers = {
+                k: v for k, v in resp.headers.items() if k.lower() not in headers_to_exclude
+            }
+            return Response(
+                content=resp.content,
+                status_code=resp.status_code,
+                headers=response_headers,
+                media_type=resp.headers.get("content-type"),
+            )
+    except httpx.RequestError as err:
+        raise HTTPException(status_code=502, detail=f"Proxy error fetching target URL: {err}") from err
 
 
 static_dir = Path(__file__).parent / "static"
