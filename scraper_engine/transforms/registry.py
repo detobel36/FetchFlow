@@ -6,9 +6,11 @@ from scraper_engine.transforms.builtin import (
     LowerTransformer,
     RegexTransformer,
     ReplaceTransformer,
+    SpaceToDashTransformer,
     SplitTransformer,
     TrimTransformer,
     UpperTransformer,
+    URLEncodeTransformer,
 )
 
 
@@ -124,6 +126,8 @@ class TransformerRegistry:
 TransformerRegistry.register("trim", TrimTransformer)
 TransformerRegistry.register("lower", LowerTransformer)
 TransformerRegistry.register("upper", UpperTransformer)
+TransformerRegistry.register("url_encode", URLEncodeTransformer)
+TransformerRegistry.register("space_to_dash", SpaceToDashTransformer)
 TransformerRegistry.register("replace", ReplaceTransformer)
 TransformerRegistry.register("split", SplitTransformer)
 TransformerRegistry.register("regex", RegexTransformer)

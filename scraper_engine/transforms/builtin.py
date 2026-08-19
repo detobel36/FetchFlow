@@ -1,4 +1,5 @@
 import re
+from urllib.parse import quote
 
 from scraper_engine.errors import TransformationError
 from scraper_engine.transforms.base import BaseTransformer
@@ -26,6 +27,22 @@ class UpperTransformer(BaseTransformer):
     def transform_single(self, value: str) -> str:
         """Convert string to uppercase."""
         return value.upper()
+
+
+class URLEncodeTransformer(BaseTransformer):
+    """Encodes string for inclusion in URLs."""
+
+    def transform_single(self, value: str) -> str:
+        """URL encode string."""
+        return quote(value, safe="")
+
+
+class SpaceToDashTransformer(BaseTransformer):
+    """Replaces spaces with dashes."""
+
+    def transform_single(self, value: str) -> str:
+        """Replace spaces with dashes."""
+        return value.replace(" ", "-")
 
 
 class ReplaceTransformer(BaseTransformer):
