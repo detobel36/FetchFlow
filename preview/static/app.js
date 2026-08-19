@@ -62,6 +62,181 @@ document.addEventListener("DOMContentLoaded", function () {
     ]
   };
 
+  function getAvailableVariables(cm) {
+    const vars = new Set(["loop_index", "loop_item"]);
+    try {
+      const text = cm.getValue();
+      const config = JSON.parse(text);
+      if (config.variables && typeof config.variables === "object") {
+        Object.keys(config.variables).forEach(v => vars.add(v));
+      }
+      if (Array.isArray(config.steps)) {
+        config.steps.forEach(step => {
+          if (step.id) vars.add(step.id);
+          if (step.fields && typeof step.fields === "object") {
+            Object.keys(step.fields).forEach(f => vars.add(f));
+          }
+          if (step.for_each) {
+            if (step.for_each.field) vars.add(step.for_each.field);
+            if (step.for_each.sub_field) vars.add(step.for_each.sub_field);
+          }
+        });
+      }
+    } catch (e) {
+      const text = cm.getValue();
+      const varMatch = text.match(/"variables"\s*:\s*\{([^}]*)\}/);
+      if (varMatch) {
+        const keyMatches = varMatch[1].matchAll(/"([a-zA-Z0-9_]+)"\s*:/g);
+        for (const m of keyMatches) vars.add(m[1]);
+      }
+      const stepIdMatches = text.matchAll(/"id"\s*:\s*"([a-zA-Z0-9_]+)"/g);
+      for (const m of stepIdMatches) vars.add(m[1]);
+    }
+    return Array.from(vars);
+  }
+
+  function customHintProvider(cm) {
+    const cur = cm.getCursor();
+    const lineText = cm.getLine(cur.line);
+    const textBefore = lineText.slice(0, cur.ch);
+
+    let suggestions = [];
+    let fromCh = cur.ch;
+    let toCh = cur.ch;
+
+    // 1. Template variable interpolation {{ ...
+    const varMatch = textBefore.match(/\{\{([a-zA-Z0-9_]*)$/);
+    if (varMatch) {
+      const prefix = varMatch[1];
+      fromCh = cur.ch - prefix.length;
+      const availableVars = getAvailableVariables(cm);
+      suggestions = availableVars.filter(v => v.toLowerCase().startsWith(prefix.toLowerCase()));
+      return {
+        list: suggestions,
+        from: CodeMirror.Pos(cur.line, fromCh),
+        to: CodeMirror.Pos(cur.line, toCh)
+      };
+    }
+
+    // 2. Specific key values, e.g. "method": "GE|
+    const valueMatch = textBefore.match(/"([a-zA-Z0-9_]+)"\s*:\s*"([a-zA-Z0-9_-]*)$/);
+    if (valueMatch) {
+      const key = valueMatch[1];
+      const prefix = valueMatch[2];
+      fromCh = cur.ch - prefix.length;
+
+      if (key === "method") {
+        const methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"];
+        suggestions = methods.filter(m => m.toLowerCase().startsWith(prefix.toLowerCase()));
+      } else if (key === "selector_type") {
+        const types = ["css", "xpath", "jsonpath", "json"];
+        suggestions = types.filter(t => t.toLowerCase().startsWith(prefix.toLowerCase()));
+      } else if (key === "type") {
+        const types = ["text", "attribute"];
+        suggestions = types.filter(t => t.toLowerCase().startsWith(prefix.toLowerCase()));
+      } else if (key === "Content-Type" || key === "Accept") {
+        const mimeTypes = ["application/json", "text/html", "application/x-www-form-urlencoded", "multipart/form-data", "text/plain"];
+        suggestions = mimeTypes.filter(m => m.toLowerCase().startsWith(prefix.toLowerCase()));
+      }
+
+      if (suggestions.length > 0) {
+        return {
+          list: suggestions,
+          from: CodeMirror.Pos(cur.line, fromCh),
+          to: CodeMirror.Pos(cur.line, toCh)
+        };
+      }
+    }
+
+    // 3. Transform array items: "transform": [ "tr|
+    const transformMatch = textBefore.match(/"transform"\s*:\s*\[[^\]]*"([a-zA-Z0-9_]*)$/);
+    if (transformMatch) {
+      const prefix = transformMatch[1];
+      fromCh = cur.ch - prefix.length;
+      const transforms = ["trim", "lowercase", "uppercase", "strip_html", "regex", "replace", "split", "join", "default"];
+      suggestions = transforms.filter(t => t.toLowerCase().startsWith(prefix.toLowerCase()));
+      return {
+        list: suggestions,
+        from: CodeMirror.Pos(cur.line, fromCh),
+        to: CodeMirror.Pos(cur.line, toCh)
+      };
+    }
+
+    // 4. Header keys inside "headers": { ... }
+    let inHeadersBlock = false;
+    for (let l = cur.line; l >= Math.max(0, cur.line - 15); l--) {
+      const ltext = cm.getLine(l);
+      if (ltext.includes('"headers"')) {
+        inHeadersBlock = true;
+        break;
+      }
+      if (ltext.includes('}') && l < cur.line && !ltext.includes('{')) {
+        break;
+      }
+    }
+
+    const headerKeyMatch = textBefore.match(/"([a-zA-Z0-9_-]*)$/);
+    if (inHeadersBlock && headerKeyMatch && !textBefore.includes(":")) {
+      const prefix = headerKeyMatch[1];
+      fromCh = cur.ch - prefix.length;
+      const commonHeaders = [
+        "User-Agent", "Accept", "Content-Type", "Authorization",
+        "Cookie", "Host", "Referer", "Cache-Control", "Accept-Encoding", "Accept-Language"
+      ];
+      suggestions = commonHeaders.filter(h => h.toLowerCase().startsWith(prefix.toLowerCase()));
+      if (suggestions.length > 0) {
+        return {
+          list: suggestions,
+          from: CodeMirror.Pos(cur.line, fromCh),
+          to: CodeMirror.Pos(cur.line, toCh)
+        };
+      }
+    }
+
+    // 5. JSON Object Property Keys
+    const keyMatch = textBefore.match(/"([a-zA-Z0-9_]*)$/);
+    if (keyMatch) {
+      const prefix = keyMatch[1];
+      fromCh = cur.ch - prefix.length;
+
+      let context = "top";
+      for (let l = cur.line; l >= Math.max(0, cur.line - 30); l--) {
+        const ltext = cm.getLine(l);
+        if (ltext.includes('"request"')) { context = "request"; break; }
+        if (ltext.includes('"for_each"')) { context = "for_each"; break; }
+        if (ltext.includes('"extract"')) { context = "extract"; break; }
+        if (ltext.includes('"fields"')) { context = "fields"; break; }
+        if (ltext.includes('"steps"')) { context = "step"; break; }
+      }
+
+      let keys = [];
+      if (context === "top") {
+        keys = ["name", "version", "variables", "steps"];
+      } else if (context === "step") {
+        keys = ["id", "parser", "for_each", "request", "extract", "fields"];
+      } else if (context === "request") {
+        keys = ["method", "url", "response_type", "headers", "params"];
+      } else if (context === "for_each") {
+        keys = ["from", "field", "sub_field"];
+      } else if (context === "extract") {
+        keys = ["selector", "selector_type"];
+      } else if (context === "fields") {
+        keys = ["selector", "selector_type", "type", "attribute", "transform", "fields", "extract"];
+      }
+
+      suggestions = keys.filter(k => k.toLowerCase().startsWith(prefix.toLowerCase()));
+      if (suggestions.length > 0) {
+        return {
+          list: suggestions,
+          from: CodeMirror.Pos(cur.line, fromCh),
+          to: CodeMirror.Pos(cur.line, toCh)
+        };
+      }
+    }
+
+    return null;
+  }
+
   function initEditor() {
     const textarea = document.getElementById("json-editor");
     editor = CodeMirror.fromTextArea(textarea, {
@@ -72,7 +247,15 @@ document.addEventListener("DOMContentLoaded", function () {
       matchBrackets: true,
       indentUnit: 2,
       tabSize: 2,
-      lineWrapping: true
+      lineWrapping: true,
+      extraKeys: {
+        "Ctrl-Space": function (cm) {
+          cm.showHint({ hint: customHintProvider, completeSingle: false });
+        },
+        "Cmd-Space": function (cm) {
+          cm.showHint({ hint: customHintProvider, completeSingle: false });
+        }
+      }
     });
 
     const savedDraft = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -84,6 +267,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     editor.on("change", function () {
       localStorage.setItem(LOCAL_STORAGE_KEY, editor.getValue());
+    });
+
+    editor.on("inputRead", function (cm, change) {
+      if (change.origin !== "+input") return;
+      const ch = change.text[0];
+      if (ch === "{" || ch === '"' || /[a-zA-Z0-9_-]/.test(ch)) {
+        cm.showHint({ hint: customHintProvider, completeSingle: false });
+      }
     });
   }
 
@@ -354,6 +545,34 @@ document.addEventListener("DOMContentLoaded", function () {
         transformsContainer.appendChild(fieldBox);
       }
     }
+  }
+
+  // Import File Listener
+  const btnImport = document.getElementById("btn-import");
+  const fileImportInput = document.getElementById("file-import");
+
+  if (btnImport && fileImportInput) {
+    btnImport.addEventListener("click", () => {
+      fileImportInput.click();
+    });
+
+    fileImportInput.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const content = evt.target.result;
+        if (editor) {
+          editor.setValue(content);
+          localStorage.setItem(LOCAL_STORAGE_KEY, content);
+          handleAction(btnApply, () => apiCall("/api/session/load", { config_json: content }));
+        }
+      };
+      reader.readAsText(file);
+      // reset value so re-uploading the same file works if needed
+      fileImportInput.value = "";
+    });
   }
 
   // Event Listeners with Loading States
