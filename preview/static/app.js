@@ -1,5 +1,6 @@
+let editor = null;
+
 document.addEventListener("DOMContentLoaded", function () {
-  let editor = null;
   let activeLineMarker = null;
 
   const LOCAL_STORAGE_KEY = "scraper_config_draft";
@@ -237,6 +238,53 @@ document.addEventListener("DOMContentLoaded", function () {
     return null;
   }
 
+  function jsonLinter(text) {
+    const found = [];
+    if (!text || !text.trim()) return found;
+
+    try {
+      JSON.parse(text);
+    } catch (e) {
+      const message = e.message || "Invalid JSON syntax";
+      let line = 0;
+      let ch = 0;
+
+      // Try extracting line number from standard V8 JSON.parse error message (e.g., "... at line 5 column 12")
+      const posMatch = message.match(/line\s+(\d+)\s+column\s+(\d+)/i) || message.match(/position\s+(\d+)/i);
+      if (posMatch) {
+        if (posMatch[2] !== undefined) {
+          line = Math.max(0, parseInt(posMatch[1], 10) - 1);
+          ch = Math.max(0, parseInt(posMatch[2], 10) - 1);
+        } else if (posMatch[1] !== undefined) {
+          const pos = parseInt(posMatch[1], 10);
+          const lines = text.slice(0, pos).split("\n");
+          line = lines.length - 1;
+          ch = lines[lines.length - 1].length;
+        }
+      } else {
+        // Fallback: check for common trailing comma issues
+        const lines = text.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+          if (/,\s*[\}\]]/.test(lines[i])) {
+            line = i;
+            ch = lines[i].indexOf(",");
+            break;
+          }
+        }
+      }
+
+      const lineContent = editor ? editor.getLine(line) || "" : "";
+      found.push({
+        from: CodeMirror.Pos(line, ch),
+        to: CodeMirror.Pos(line, Math.max(ch + 1, lineContent.length)),
+        message: message,
+        severity: "error"
+      });
+    }
+
+    return found;
+  }
+
   function initEditor() {
     const textarea = document.getElementById("json-editor");
     editor = CodeMirror.fromTextArea(textarea, {
@@ -245,6 +293,9 @@ document.addEventListener("DOMContentLoaded", function () {
       lineNumbers: true,
       autoCloseBrackets: true,
       matchBrackets: true,
+      foldGutter: true,
+      gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter", "CodeMirror-lint-markers"],
+      lint: { getAnnotations: jsonLinter, async: false },
       indentUnit: 2,
       tabSize: 2,
       lineWrapping: true,
@@ -572,6 +623,21 @@ document.addEventListener("DOMContentLoaded", function () {
       reader.readAsText(file);
       // reset value so re-uploading the same file works if needed
       fileImportInput.value = "";
+    });
+  }
+
+  // Format JSON Listener
+  const btnFormat = document.getElementById("btn-format");
+  if (btnFormat) {
+    btnFormat.addEventListener("click", () => {
+      try {
+        const parsed = JSON.parse(editor.getValue());
+        const formatted = JSON.stringify(parsed, null, 2);
+        editor.setValue(formatted);
+        localStorage.setItem(LOCAL_STORAGE_KEY, formatted);
+      } catch (err) {
+        alert("Cannot format invalid JSON: " + err.message);
+      }
     });
   }
 
