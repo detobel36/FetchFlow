@@ -64,8 +64,11 @@ def test_find_key_line_number():
 
 def test_highlight_html_elements():
     html_input = """<html>
+        <head><base href="https://example.com/store/items"></head>
         <body>
             <div class="product"><span class="price">$10</span></div>
+            <img src="/image.png">
+            <a href="https://other.com/page">Link</a>
         </body>
     </html>"""
 
@@ -82,7 +85,9 @@ def test_highlight_html_elements():
     assert 'data-debugger-field="price"' in highlighted
     assert 'data-debugger-field-selector=".price"' in highlighted
     assert "debugger-preview-styles" in highlighted
-    assert '<base href="https://example.com/store/items">' in highlighted
+    assert "<base" not in highlighted
+    assert "/api/proxy?url=https%3A%2F%2Fexample.com%2Fimage.png" in highlighted
+    assert "/api/proxy?url=https%3A%2F%2Fother.com%2Fpage" in highlighted
 
 
 def test_debug_session_navigation_and_caching():
@@ -210,3 +215,16 @@ def test_fastapi_preview_endpoints():
     r_html = test_client.get("/api/preview-html")
     assert r_html.status_code == 200
     assert "text/html" in r_html.headers["content-type"]
+
+
+def test_proxy_endpoint_validation():
+    test_client = TestClient(app)
+
+    # Test invalid scheme
+    r_invalid = test_client.get("/api/proxy?url=ftp://example.com")
+    assert r_invalid.status_code == 400
+    assert "Invalid URL scheme" in r_invalid.json()["detail"]
+
+    # Test missing url
+    r_missing = test_client.get("/api/proxy")
+    assert r_missing.status_code == 422
