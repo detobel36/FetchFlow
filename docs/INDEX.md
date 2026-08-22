@@ -34,3 +34,6 @@ Welcome to the **Jexflow** wiki! Jexflow is a lightweight, configuration-driven 
    - Programmatic workflow execution with `Scraper`
    - Low-level HTML/JSON parsing and BeautifulSoup-style selection
    - Registering custom document parsers and selector engines
+9. [Price Comparison Tutorial Across Multiple Stores](price-comparison-tutorial.md)
+   - Multi-store price comparison workflow (Delhaize & Colruyt)
+   - Generic Python runner without store-specific code
