@@ -16,7 +16,24 @@ Instead of writing custom BeautifulSoup or Selenium code for each website, you c
 
 ---
 
-## 2. Configuration Files
+## 2. Installation & Module Setup
+
+An external developer using Jexflow in their project will first add the package or project dependencies to `requirements.txt`:
+
+```text
+# requirements.txt
+-e git+https://github.com/your-org/jexflow.git#egg=jexflow
+```
+
+Once installed via `pip install -r requirements.txt`, the engine module is imported in Python as `scraper_engine`:
+
+```python
+from scraper_engine import Scraper
+```
+
+---
+
+## 3. Configuration Files
 
 The JSON configuration files reside in the `examples/` directory.
 
@@ -112,7 +129,7 @@ The JSON configuration files reside in the `examples/` directory.
 
 ---
 
-## 3. Generic Python Execution Code (Using Jexflow as a Library)
+## 4. Generic Python Execution Code (Using Jexflow as a Library)
 
 Below is a complete example of how an external developer uses Jexflow programmatically in Python:
 
@@ -164,7 +181,7 @@ if __name__ == "__main__":
 
 ---
 
-## 4. Key Takeaways
+## 5. Key Takeaways
 
 1. **Separation of Concerns**: HTML parsing rules and request URLs are defined entirely in JSON configurations ([`delhaize.json`](../examples/delhaize.json) and [`colruyt.json`](../examples/colruyt.json)), while Python code remains 100% generic.
 2. **Scalability**: To add a new store (e.g., Carrefour or Albert Heijn), simply create a new JSON configuration file and add its path to `config_paths`. No Python code changes are required.
