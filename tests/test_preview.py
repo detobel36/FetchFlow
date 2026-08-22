@@ -3,11 +3,11 @@ from pathlib import Path
 import httpx
 from fastapi.testclient import TestClient
 
+from jexflow.http import HTTPXClient
 from preview.app import app
 from preview.html_highlighter import highlight_html_elements
 from preview.session import DebugSession
 from preview.validation import find_key_line_number, validate_scraper_json
-from scraper_engine.http import HTTPXClient
 
 
 def test_validate_scraper_json_valid():

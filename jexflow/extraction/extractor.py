@@ -1,7 +1,7 @@
 from typing import Any
 
-from scraper_engine.errors import ExtractionError
-from scraper_engine.parser import BaseDocument, get_selector_engine
+from jexflow.errors import ExtractionError
+from jexflow.parser import BaseDocument, get_selector_engine
 
 
 class ElementExtractor:

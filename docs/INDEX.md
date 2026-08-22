@@ -30,7 +30,7 @@ Welcome to the **Jexflow** wiki! Jexflow is a lightweight, configuration-driven 
    - Interactive developer tool overview
    - Launching via CLI (`python -m preview`)
    - Step navigation, element highlighting, and loop iteration debugging
-8. [Using FetchFlow as a Python Library](python-library-guide.md)
+8. [Using Jexflow as a Python Library](python-library-guide.md)
    - Programmatic workflow execution with `Scraper`
    - Low-level HTML/JSON parsing and BeautifulSoup-style selection
    - Registering custom document parsers and selector engines

@@ -1,14 +1,16 @@
-"""Error hierarchy for the scraper engine."""
+"""Error hierarchy for Jexflow."""
 
 
-class ScraperEngineError(Exception):
-    """Base exception for all scraper engine errors."""
+class JexflowError(Exception):
+    """Base exception for all Jexflow errors."""
 
 
+# Alias for backward compatibility
+ScraperEngineError = JexflowError
 
-class ConfigurationError(ScraperEngineError):
+
+class ConfigurationError(JexflowError):
     """Raised when configuration is invalid or missing."""
-
 
 
 class ConfigValidationError(ConfigurationError):
@@ -25,7 +27,7 @@ class ConfigValidationError(ConfigurationError):
         self.errors = errors or []
 
 
-class HTTPError(ScraperEngineError):
+class HTTPError(JexflowError):
     """Raised when an HTTP request fails."""
 
     def __init__(self, message: str, status_code: int | None = None, url: str | None = None) -> None:
@@ -41,26 +43,21 @@ class HTTPError(ScraperEngineError):
         self.url = url
 
 
-class ParsingError(ScraperEngineError):
+class ParsingError(JexflowError):
     """Raised when parsing HTML/XML response fails."""
 
 
-
-class ExtractionError(ScraperEngineError):
+class ExtractionError(JexflowError):
     """Raised when extracting elements or fields fails."""
 
 
-
-class TransformationError(ScraperEngineError):
+class TransformationError(JexflowError):
     """Raised when applying a value transformation fails."""
 
 
-
-class TemplateError(ScraperEngineError):
+class TemplateError(JexflowError):
     """Raised when variable interpolation or template rendering fails."""
 
 
-
-class WorkflowExecutionError(ScraperEngineError):
+class WorkflowExecutionError(JexflowError):
     """Raised when workflow step execution fails."""
-

@@ -4,8 +4,8 @@ from typing import Any
 
 import httpx
 
-from scraper_engine.errors import HTTPError
-from scraper_engine.http.models import HTTPRequest, HTTPResponse
+from jexflow.errors import HTTPError
+from jexflow.http.models import HTTPRequest, HTTPResponse
 
 
 class HTTPClient(ABC):

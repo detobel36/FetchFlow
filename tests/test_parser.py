@@ -1,5 +1,5 @@
-from scraper_engine.extraction import ElementExtractor
-from scraper_engine.parser import HTMLDocument
+from jexflow.extraction import ElementExtractor
+from jexflow.parser import HTMLDocument
 
 HTML_SAMPLE = """
 <html>

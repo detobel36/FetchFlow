@@ -1,8 +1,8 @@
 import re
 from urllib.parse import quote
 
-from scraper_engine.errors import TransformationError
-from scraper_engine.transforms.base import BaseTransformer
+from jexflow.errors import TransformationError
+from jexflow.transforms.base import BaseTransformer
 
 
 class TrimTransformer(BaseTransformer):

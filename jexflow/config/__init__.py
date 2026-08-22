@@ -1,4 +1,4 @@
-from scraper_engine.config.validator import (
+from jexflow.config.validator import (
     SCRAPER_CONFIG_SCHEMA,
     ConfigLoader,
     ConfigValidator,

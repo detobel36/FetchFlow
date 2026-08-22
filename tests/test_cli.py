@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from scraper_engine.cli import main
-from scraper_engine.http import HTTPResponse
+from jexflow.cli import main
+from jexflow.http import HTTPResponse
 
 
 def test_cli_stdout(capsys: pytest.CaptureFixture[str]):

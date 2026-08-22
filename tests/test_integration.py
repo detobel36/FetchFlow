@@ -2,8 +2,8 @@ from pathlib import Path
 
 import httpx
 
-from scraper_engine import Scraper
-from scraper_engine.http import HTTPXClient
+from jexflow import Scraper
+from jexflow.http import HTTPXClient
 
 CATALOG_HTML = """
 <!DOCTYPE html>

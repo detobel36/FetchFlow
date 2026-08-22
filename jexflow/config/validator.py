@@ -5,7 +5,7 @@ from typing import Any
 
 import jsonschema
 
-from scraper_engine.errors import ConfigValidationError
+from jexflow.errors import ConfigValidationError
 
 SCRAPER_CONFIG_SCHEMA: dict[str, Any] = {
     "$schema": "http://json-schema.org/draft-07/schema#",

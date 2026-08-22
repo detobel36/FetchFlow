@@ -2,8 +2,8 @@ from typing import Any
 
 import lxml.html
 
-from scraper_engine.errors import ParsingError
-from scraper_engine.parser.base import BaseDocument, SelectorEngine
+from jexflow.errors import ParsingError
+from jexflow.parser.base import BaseDocument, SelectorEngine
 
 
 class HTMLDocument(BaseDocument):

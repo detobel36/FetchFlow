@@ -1,7 +1,7 @@
 import re
 from typing import Any
 
-from scraper_engine.errors import TemplateError
+from jexflow.errors import TemplateError
 
 
 class TemplateRenderer:

@@ -1,19 +1,19 @@
-# Using FetchFlow as a Python Library
+# Using Jexflow as a Python Library
 
-FetchFlow is not only a CLI tool for running configuration-driven scraping workflows; it can also be used directly as a Python library, similar to libraries like **BeautifulSoup**, **PyQuery**, or **lxml**.
+Jexflow is not only a CLI tool for running configuration-driven scraping workflows; it can also be used directly as a Python library, similar to libraries like **BeautifulSoup**, **PyQuery**, or **lxml**.
 
-Whether you want to perform quick DOM/JSON queries programmatically, build custom scraping scripts, or extend FetchFlow's document parsing capabilities, FetchFlow provides both low-level and high-level Python APIs.
+Whether you want to perform quick DOM/JSON queries programmatically, build custom scraping scripts, or extend Jexflow's document parsing capabilities, Jexflow provides both low-level and high-level Python APIs.
 
 ---
 
 ## 1. High-Level Usage: Running Scrapers Programmatically (`Scraper`)
 
-The `Scraper` class is the primary entry point for executing full FetchFlow workflows in Python.
+The `Scraper` class is the primary entry point for executing full Jexflow workflows in Python.
 
 ### Loading from File, Dict, or JSON String
 
 ```python
-from scraper_engine import Scraper
+from jexflow import Scraper
 
 # 1. From a JSON file path
 scraper = Scraper("workflow.json")
@@ -49,11 +49,11 @@ results = scraper.run()
 
 ## 2. Low-Level Usage: Parsing & Selection (BeautifulSoup-Style)
 
-For quick HTML or JSON parsing without defining full multi-step workflows, FetchFlow offers document wrappers (`HTMLDocument`, `JSONDocument`) and selector engines (`CSSSelectorEngine`, `XPathSelectorEngine`, `JSONPathSelectorEngine`).
+For quick HTML or JSON parsing without defining full multi-step workflows, Jexflow offers document wrappers (`HTMLDocument`, `JSONDocument`) and selector engines (`CSSSelectorEngine`, `XPathSelectorEngine`, `JSONPathSelectorEngine`).
 
 ### HTML Parsing & Querying
 
-#### BeautifulSoup vs FetchFlow Comparison
+#### BeautifulSoup vs Jexflow Comparison
 
 **BeautifulSoup:**
 ```python
@@ -68,10 +68,10 @@ title = soup.select_one("div.product h1").get_text()
 price = soup.select_one("span.price").get_text()
 ```
 
-**FetchFlow:**
+**Jexflow:**
 ```python
-from scraper_engine.parser import HTMLDocument, CSSSelectorEngine, XPathSelectorEngine
-from scraper_engine.extraction import ElementExtractor
+from jexflow.parser import HTMLDocument, CSSSelectorEngine, XPathSelectorEngine
+from jexflow.extraction import ElementExtractor
 
 html_content = '<div class="product"><h1 class="title">Laptop</h1><a href="/buy" class="link">Buy Now</a></div>'
 
@@ -93,11 +93,11 @@ print(nodes[0].text_content())  # Laptop
 
 ### JSON Parsing & Querying with JSONPath
 
-FetchFlow standardizes HTML and JSON extraction with unified selector models.
+Jexflow standardizes HTML and JSON extraction with unified selector models.
 
 ```python
-from scraper_engine.parser import JSONDocument, JSONPathSelectorEngine
-from scraper_engine.extraction import ElementExtractor
+from jexflow.parser import JSONDocument, JSONPathSelectorEngine
+from jexflow.extraction import ElementExtractor
 
 json_data = '{"store": {"books": [{"title": "Book A", "price": 10}, {"title": "Book B", "price": 15}]}}'
 
@@ -117,12 +117,12 @@ print(book_prices)  # [10, 15]
 
 ## 3. Extending Document Parsers & Selector Engines
 
-FetchFlow is extensible. You can register custom document parsers or selector engines at runtime using `register_document_parser` and `register_selector_engine`.
+Jexflow is extensible. You can register custom document parsers or selector engines at runtime using `register_document_parser` and `register_selector_engine`.
 
 ### Registering a Custom Document Parser
 
 ```python
-from scraper_engine.parser import BaseDocument, register_document_parser, get_document
+from jexflow.parser import BaseDocument, register_document_parser, get_document
 
 class CustomXMLDocument(BaseDocument):
     def __init__(self, content: str):
@@ -143,7 +143,7 @@ print(isinstance(doc, CustomXMLDocument))  # True
 ### Registering a Custom Selector Engine
 
 ```python
-from scraper_engine.parser import SelectorEngine, register_selector_engine, get_selector_engine
+from jexflow.parser import SelectorEngine, register_selector_engine, get_selector_engine
 
 class RegexSelectorEngine(SelectorEngine):
     import re
@@ -168,6 +168,6 @@ print(matches)  # ['test@example.com']
 
 | Module | Purpose | Key Exports |
 | --- | --- | --- |
-| `scraper_engine` | High-level scraper execution | `Scraper`, `ScraperEngineError` |
-| `scraper_engine.parser` | Document parsing & selection | `HTMLDocument`, `JSONDocument`, `CSSSelectorEngine`, `XPathSelectorEngine`, `JSONPathSelectorEngine`, `register_document_parser`, `register_selector_engine`, `get_document`, `get_selector_engine` |
-| `scraper_engine.extraction` | Element and field extraction | `ElementExtractor` |
+| `jexflow` | High-level scraper execution | `Scraper`, `JexflowError` |
+| `jexflow.parser` | Document parsing & selection | `HTMLDocument`, `JSONDocument`, `CSSSelectorEngine`, `XPathSelectorEngine`, `JSONPathSelectorEngine`, `register_document_parser`, `register_selector_engine`, `get_document`, `get_selector_engine` |
+| `jexflow.extraction` | Element and field extraction | `ElementExtractor` |

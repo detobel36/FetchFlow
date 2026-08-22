@@ -1,8 +1,8 @@
 from typing import Any, ClassVar
 
-from scraper_engine.errors import TransformationError
-from scraper_engine.transforms.base import BaseTransformer
-from scraper_engine.transforms.builtin import (
+from jexflow.errors import TransformationError
+from jexflow.transforms.base import BaseTransformer
+from jexflow.transforms.builtin import (
     LowerTransformer,
     RegexTransformer,
     ReplaceTransformer,

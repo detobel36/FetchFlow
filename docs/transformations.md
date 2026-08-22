@@ -68,7 +68,7 @@ Transformations are configured as an ordered array of transformer keywords or pa
 Developers can register custom transformation functions using `TransformerRegistry`:
 
 ```python
-from scraper_engine.transforms import BaseTransformer, TransformerRegistry
+from jexflow.transforms import BaseTransformer, TransformerRegistry
 
 class ReverseTransformer(BaseTransformer):
     def transform_single(self, value: str) -> str:

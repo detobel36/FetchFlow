@@ -1,5 +1,5 @@
-from scraper_engine.transforms.base import BaseTransformer
-from scraper_engine.transforms.builtin import (
+from jexflow.transforms.base import BaseTransformer
+from jexflow.transforms.builtin import (
     LowerTransformer,
     RegexTransformer,
     ReplaceTransformer,
@@ -7,7 +7,7 @@ from scraper_engine.transforms.builtin import (
     TrimTransformer,
     UpperTransformer,
 )
-from scraper_engine.transforms.registry import TransformerRegistry
+from jexflow.transforms.registry import TransformerRegistry
 
 __all__ = [
     "BaseTransformer",

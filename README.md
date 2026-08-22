@@ -46,25 +46,25 @@ python -m pip install -r requirements.txt
 You can launch and test scrapers directly from the command line:
 
 ```bash
-python -m scraper_engine examples/ecommerce_scraper.json
+python -m jexflow examples/ecommerce_scraper.json
 ```
 
 Output results to a file:
 
 ```bash
-python -m scraper_engine examples/ecommerce_scraper.json -o results.json
+python -m jexflow examples/ecommerce_scraper.json -o results.json
 ```
 
 Or execute a REST JSON API scraper workflow:
 
 ```bash
-python -m scraper_engine examples/rest_api_scraper.json
+python -m jexflow examples/rest_api_scraper.json
 ```
 
 ### Usage in Python
 
 ```python
-from scraper_engine import Scraper
+from jexflow import Scraper
 
 # Load from JSON file or dictionary
 scraper = Scraper("examples/ecommerce_scraper.json")
