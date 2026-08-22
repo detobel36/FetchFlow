@@ -346,18 +346,6 @@ class StepExecutor:
         finally:
             context.pop_loop_context()
 
-    def _execute_for_each_sub_item(
-        self,
-        step_config: dict[str, Any],
-        context: ExecutionContext,
-        item: dict[str, Any],
-        sub_item: Any,  # noqa: ANN401
-        sub_field: str | None,
-    ) -> list[dict[str, Any]]:
-        """Execute step request for a single sub-item in for_each loop."""
-        res, _ = self._execute_for_each_sub_item_with_trace(step_config, context, item, sub_item, sub_field)
-        return res
-
     def _execute_for_each_with_trace(
         self,
         step_config: dict[str, Any],
@@ -371,7 +359,7 @@ class StepExecutor:
         items = context.get_step_result(from_step_id)
 
         # Collect all items to iterate over
-        sub_item_pairs: list[tuple[dict[str, Any]], Any] = []
+        sub_item_pairs: list[tuple[dict[str, Any], Any]] = []
         for item in items:
             field_val = resolve_field_value(item, from_field) if from_field else None
 
@@ -398,16 +386,6 @@ class StepExecutor:
             traces.append(trace)
 
         return step_results, traces
-
-    def _execute_for_each(
-        self,
-        step_config: dict[str, Any],
-        context: ExecutionContext,
-        for_each_cfg: dict[str, Any],
-    ) -> list[dict[str, Any]]:
-        """Execute step using for_each loop over step results."""
-        results, _ = self._execute_for_each_with_trace(step_config, context, for_each_cfg)
-        return results
 
     def execute_with_trace(
         self, step_config: dict[str, Any], context: ExecutionContext,

@@ -48,6 +48,32 @@ The **Config-Driven Python Web Scraping Engine** is a lightweight, embeddable Py
    - `ExecutionContext` maintains a scope stack for step results, global variables, and loop contexts.
    - `StepExecutor` executes sequential steps and `for_each` loops on both HTML and REST JSON response payloads.
 
-## 3. Future Evolution Roadmap
+## 3. Architectural Problematic Points & Technical Debt
 
-The system is designed so future features (e.g. XML documents, GraphQL, or custom protocols) can be added without modifying the core workflow engine by registering new document parsers and selector engines.
+During system review and auditing, the following architectural problematic points and risk areas were identified:
+
+### 3.1. Security: Server-Side Request Forgery (SSRF) in Preview Proxy (`preview/app.py`)
+- **Issue**: The UI preview tool includes a `/api/proxy` endpoint designed to fetch external HTML/assets and bypass browser CORS policies. Previously, this endpoint accepted any `http://` or `https://` target URL without IP/hostname restrictions.
+- **Risk**: An attacker or untrusted configuration could force the preview server to send HTTP requests to internal services (e.g. `http://127.0.0.1:8000`, `http://169.254.169.254` AWS metadata endpoint, or internal `10.0.0.0/8` networks), exposing internal infrastructure.
+- **Remediation**: Implemented strict host validation in `preview/app.py` blocking loopback, link-local, RFC 1918 private IPv4 addresses, IPv6 private addresses, and cloud metadata IPs.
+
+### 3.2. State Mutation & Variable Context Leaks (`jexflow/workflow`)
+- **Issue**: `ExecutionContext` merges dictionaries (`self.global_variables | self.step_results | loop_frame`). When iterating over items in `for_each` loops, shallow dictionary copying or in-place item updates risked polluting variables across loop iterations or leaking child context into sibling steps.
+- **Remediation**: Standardized on explicit shallow and deep copy semantics for loop context frames in `StepExecutor` and `ExecutionContext` to guarantee strict isolation between loop iterations.
+
+### 3.3. Unbounded Debug Session Caching in Preview (`preview/session.py`)
+- **Issue**: `DebugSession` retains all step iteration execution traces in an in-memory dictionary `self.history[(step_index, iteration_index)]`. For workflows processing thousands of loop items or large HTML documents, this unconstrained history can lead to significant memory consumption.
+- **Recommendation**: Introduce a configurable max history size or LRU eviction strategy for large debug sessions in future iterations.
+
+### 3.4. Code Duplication in Workflow Execution Pipelines (`jexflow/workflow/engine.py`)
+- **Issue**: `StepExecutor` previously maintained near-identical duplicate implementation paths for standard execution (`execute_single_request`, `_execute_for_each`) and trace-enabled execution (`execute_single_request_with_trace`, `_execute_for_each_with_trace`).
+- **Remediation**: Refactored `StepExecutor` so that standard non-trace methods delegate cleanly to trace-generating methods, eliminating code duplication while preserving backward compatibility.
+
+### 3.5. Absence of Explicit Request Timeout & Rate Limiting Controls in Config
+- **Issue**: While `HTTPXClient` defaults to a 30-second timeout, individual JSON workflow step configurations cannot specify custom timeouts, retry strategies, or delay intervals between loop iterations.
+- **Recommendation**: Extend the JSON Schema and `HTTPRequest` model to support per-step timeout override, retry policy, and inter-request delay settings.
+
+## 4. Future Evolution Roadmap
+
+1. **XML & GraphQL Parser Plugins**: Leverage `register_document_parser` and `register_selector_engine` to add native support for XML feeds and GraphQL endpoints.
+2. **Resilient Rate Limiting & Delays**: Add optional rate-limiting / sleep configuration to `for_each` loops to avoid throttling when scraping external targets.
