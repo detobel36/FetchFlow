@@ -76,7 +76,7 @@ def test_highlight_html_elements():
         html_content=html_input,
         container_selector=".product",
         container_selector_type="css",
-        fields_config={"price": {"selector": ".price", "selector_type": "css"}},
+        fields_config={"price": {"extract": {"selector": ".price", "selector_type": "css"}}},
         base_url="https://example.com/store/items",
     )
 
@@ -129,7 +129,7 @@ def test_debug_session_navigation_and_caching():
                 "request": {"method": "GET", "url": "{{base_url}}/items"},
                 "extract": {"selector": ".item", "selector_type": "css"},
                 "fields": {
-                    "id": {"selector": ".id", "type": "text"},
+                    "id": {"extract": {"selector": ".id"}, "type": "text"},
                 },
             },
             {
@@ -138,7 +138,7 @@ def test_debug_session_navigation_and_caching():
                 "request": {"method": "GET", "url": "{{base_url}}/detail/{{id}}"},
                 "extract": {"selector": ".detail", "selector_type": "css"},
                 "fields": {
-                    "val": {"selector": ".val", "type": "text"},
+                    "val": {"extract": {"selector": ".val"}, "type": "text"},
                 },
             },
         ],

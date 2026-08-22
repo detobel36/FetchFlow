@@ -8,7 +8,9 @@
       },
       "fields": {
         "title": {
-          "selector": "h1",
+          "extract": {
+            "selector": "h1"
+          },
           "type": "text",
           "transform": ["trim"]
         }

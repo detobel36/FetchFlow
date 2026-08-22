@@ -83,8 +83,17 @@ def _highlight_fields(
     for field_name, field_cfg in fields_config.items():
         if not isinstance(field_cfg, dict):
             continue
-        f_selector = field_cfg.get("selector")
-        f_sel_type = field_cfg.get("selector_type", default_sel_type or "css")
+
+        if "fields" in field_cfg:
+            _highlight_fields(tree, field_cfg["fields"], default_sel_type)
+
+        extract_cfg = field_cfg.get("extract")
+        if not extract_cfg or not isinstance(extract_cfg, dict):
+            continue
+
+        f_selector = extract_cfg.get("selector")
+        f_sel_type = extract_cfg.get("selector_type", default_sel_type or "css")
+
         if not f_selector:
             continue
 

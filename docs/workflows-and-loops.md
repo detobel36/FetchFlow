@@ -24,7 +24,9 @@ You can extract nested structures by defining a field containing its own `fields
   },
   "fields": {
     "product_name": {
-      "selector": ".product-title",
+      "extract": {
+        "selector": ".product-title"
+      },
       "type": "text"
     },
     "sub_products": {
@@ -34,11 +36,15 @@ You can extract nested structures by defining a field containing its own `fields
       },
       "fields": {
         "sub_id": {
-          "selector": ".sub-id",
+          "extract": {
+            "selector": ".sub-id"
+          },
           "type": "text"
         },
         "capacity": {
-          "selector": ".memory-capacity",
+          "extract": {
+            "selector": ".memory-capacity"
+          },
           "type": "text"
         }
       }
@@ -120,7 +126,9 @@ Below is a complete workflow example. Step 1 loops on `.products` and for each p
       },
       "fields": {
         "phone_model": {
-          "selector": ".model-name",
+          "extract": {
+            "selector": ".model-name"
+          },
           "type": "text"
         },
         "sub_products": {
@@ -129,11 +137,15 @@ Below is a complete workflow example. Step 1 loops on `.products` and for each p
           },
           "fields": {
             "sub_id": {
-              "selector": ".sub-id",
+              "extract": {
+                "selector": ".sub-id"
+              },
               "type": "text"
             },
             "capacity": {
-              "selector": ".memory-capacity",
+              "extract": {
+                "selector": ".memory-capacity"
+              },
               "type": "text"
             }
           }
@@ -155,12 +167,16 @@ Below is a complete workflow example. Step 1 loops on `.products` and for each p
       },
       "fields": {
         "price": {
-          "selector": ".price",
+          "extract": {
+            "selector": ".price"
+          },
           "type": "text",
           "transform": ["trim"]
         },
         "stock": {
-          "selector": ".stock-status",
+          "extract": {
+            "selector": ".stock-status"
+          },
           "type": "text"
         }
       }

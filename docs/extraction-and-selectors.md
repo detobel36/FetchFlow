@@ -14,12 +14,10 @@ Extraction occurs in two distinct stages:
 
 | Property | Type | Default | Description |
 | --- | --- | --- | --- |
-| `selector` | string | *Required* | CSS selector, XPath, or JSONPath query relative to the container element or root object. |
-| `selector_type` | string | `"css"` (or `"jsonpath"` for JSON) | `"css"`, `"xpath"`, `"jsonpath"`, or `"json"`. |
+| `extract` | object | Optional | Sub-container extraction selector for nested fields, or field element selector object containing `selector` and optional `selector_type`. |
 | `type` | string | `"text"` | `"text"` to extract element text/primitive value, or `"attribute"` for an HTML/JSON attribute value. |
 | `attribute` | string | Required if `type="attribute"` | Name of the attribute to extract. |
 | `transform` | array | `[]` | Pipeline of transformations to apply to extracted value(s). |
-| `extract` | object | Optional | Sub-container extraction selector for nested fields. |
 | `fields` | object | Optional | Map of sub-fields to extract recursively within each sub-container. |
 
 ---
@@ -30,8 +28,10 @@ Extraction occurs in two distinct stages:
 Use standard CSS selector syntax:
 ```json
 "title": {
-  "selector": "h2.title",
-  "selector_type": "css",
+  "extract": {
+    "selector": "h2.title",
+    "selector_type": "css"
+  },
   "type": "text"
 }
 ```
@@ -40,8 +40,10 @@ Use standard CSS selector syntax:
 Use XPath expressions for advanced HTML selection:
 ```json
 "link": {
-  "selector": ".//a/@href",
-  "selector_type": "xpath",
+  "extract": {
+    "selector": ".//a/@href",
+    "selector_type": "xpath"
+  },
   "type": "attribute",
   "attribute": "href"
 }
@@ -51,8 +53,10 @@ Use XPath expressions for advanced HTML selection:
 Use JSONPath expressions for REST API JSON responses:
 ```json
 "user_name": {
-  "selector": "$.data.user.name",
-  "selector_type": "jsonpath"
+  "extract": {
+    "selector": "$.data.user.name",
+    "selector_type": "jsonpath"
+  }
 }
 ```
 
@@ -70,8 +74,10 @@ JSONPath syntax supports:
 
 ```json
 "third_item": {
-  "selector": "ul.items > li:nth-child(3)",
-  "selector_type": "css",
+  "extract": {
+    "selector": "ul.items > li:nth-child(3)",
+    "selector_type": "css"
+  },
   "type": "text"
 }
 ```
@@ -80,8 +86,10 @@ JSONPath syntax supports:
 
 ```json
 "third_item": {
-  "selector": "//ul[@class='items']/li[3]",
-  "selector_type": "xpath",
+  "extract": {
+    "selector": "//ul[@class='items']/li[3]",
+    "selector_type": "xpath"
+  },
   "type": "text"
 }
 ```
@@ -90,8 +98,10 @@ JSONPath syntax supports:
 
 ```json
 "third_item": {
-  "selector": "$.items[2]",
-  "selector_type": "jsonpath"
+  "extract": {
+    "selector": "$.items[2]",
+    "selector_type": "jsonpath"
+  }
 }
 ```
 

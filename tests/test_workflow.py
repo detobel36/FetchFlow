@@ -71,12 +71,16 @@ def test_workflow_execution():
                 },
                 "fields": {
                     "id": {
-                        "selector": ".id",
+                        "extract": {
+                            "selector": ".id",
+                        },
                         "type": "text",
                         "transform": ["trim"],
                     },
                     "name": {
-                        "selector": ".name",
+                        "extract": {
+                            "selector": ".name",
+                        },
                         "type": "text",
                         "transform": ["trim"],
                     },
@@ -98,7 +102,9 @@ def test_workflow_execution():
                 },
                 "fields": {
                     "price": {
-                        "selector": ".price",
+                        "extract": {
+                            "selector": ".price",
+                        },
                         "type": "text",
                         "transform": ["trim", {"replace": {"from": "$", "to": ""}}],
                     },
@@ -178,12 +184,16 @@ def test_json_rest_api_workflow():
                 },
                 "fields": {
                     "product_id": {
-                        "selector": "$.id",
-                        "selector_type": "jsonpath",
+                        "extract": {
+                            "selector": "$.id",
+                            "selector_type": "jsonpath",
+                        },
                     },
                     "title": {
-                        "selector": "$.title",
-                        "selector_type": "jsonpath",
+                        "extract": {
+                            "selector": "$.title",
+                            "selector_type": "jsonpath",
+                        },
                         "transform": ["upper"],
                     },
                 },
@@ -201,12 +211,16 @@ def test_json_rest_api_workflow():
                 },
                 "fields": {
                     "in_stock": {
-                        "selector": "$.in_stock",
-                        "selector_type": "jsonpath",
+                        "extract": {
+                            "selector": "$.in_stock",
+                            "selector_type": "jsonpath",
+                        },
                     },
                     "weight": {
-                        "selector": "$.specs.weight",
-                        "selector_type": "jsonpath",
+                        "extract": {
+                            "selector": "$.specs.weight",
+                            "selector_type": "jsonpath",
+                        },
                     },
                 },
             },
@@ -299,7 +313,9 @@ def test_nested_loops_same_page_and_for_each_rest():
                 },
                 "fields": {
                     "model": {
-                        "selector": ".model",
+                        "extract": {
+                            "selector": ".model",
+                        },
                         "type": "text",
                     },
                     "sub_products": {
@@ -309,11 +325,15 @@ def test_nested_loops_same_page_and_for_each_rest():
                         },
                         "fields": {
                             "sub_id": {
-                                "selector": ".sub-id",
+                                "extract": {
+                                    "selector": ".sub-id",
+                                },
                                 "type": "text",
                             },
                             "memory": {
-                                "selector": ".memory",
+                                "extract": {
+                                    "selector": ".memory",
+                                },
                                 "type": "text",
                             },
                         },
@@ -336,7 +356,9 @@ def test_nested_loops_same_page_and_for_each_rest():
                 },
                 "fields": {
                     "price": {
-                        "selector": ".price",
+                        "extract": {
+                            "selector": ".price",
+                        },
                         "type": "text",
                     },
                 },
@@ -400,13 +422,17 @@ def test_workflow_positional_selector():
                 },
                 "fields": {
                     "css_third": {
-                        "selector": "ul.rankings > li:nth-child(3)",
-                        "selector_type": "css",
+                        "extract": {
+                            "selector": "ul.rankings > li:nth-child(3)",
+                            "selector_type": "css",
+                        },
                         "type": "text",
                     },
                     "xpath_third": {
-                        "selector": "//ul[@class='rankings']/li[3]",
-                        "selector_type": "xpath",
+                        "extract": {
+                            "selector": "//ul[@class='rankings']/li[3]",
+                            "selector_type": "xpath",
+                        },
                         "type": "text",
                     },
                 },

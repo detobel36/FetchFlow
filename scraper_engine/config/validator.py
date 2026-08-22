@@ -89,14 +89,9 @@ SCRAPER_CONFIG_SCHEMA: dict[str, Any] = {
             "oneOf": [
                 {
                     "type": "object",
-                    "required": ["selector"],
+                    "required": ["extract"],
                     "properties": {
-                        "selector": {"type": "string"},
-                        "selector_type": {
-                            "type": "string",
-                            "enum": ["css", "xpath", "jsonpath", "json"],
-                            "default": "css",
-                        },
+                        "extract": {"$ref": "#/definitions/extract"},
                         "type": {"type": "string", "enum": ["text", "attribute"], "default": "text"},
                         "attribute": {"type": "string"},
                         "transform": {
@@ -116,12 +111,6 @@ SCRAPER_CONFIG_SCHEMA: dict[str, Any] = {
                     "required": ["fields"],
                     "properties": {
                         "extract": {"$ref": "#/definitions/extract"},
-                        "selector": {"type": "string"},
-                        "selector_type": {
-                            "type": "string",
-                            "enum": ["css", "xpath", "jsonpath", "json"],
-                            "default": "css",
-                        },
                         "fields": {
                             "type": "object",
                             "additionalProperties": {"$ref": "#/definitions/field"},

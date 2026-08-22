@@ -19,8 +19,10 @@ def test_cli_stdout(capsys: pytest.CaptureFixture[str]):
                 },
                 "fields": {
                     "title": {
-                        "selector": "h1",
-                        "selector_type": "css",
+                        "extract": {
+                            "selector": "h1",
+                            "selector_type": "css",
+                        },
                         "type": "text",
                     },
                 },
@@ -50,8 +52,10 @@ def test_cli_output_file(tmp_path: Path):
                 },
                 "fields": {
                     "title": {
-                        "selector": "h1",
-                        "selector_type": "css",
+                        "extract": {
+                            "selector": "h1",
+                            "selector_type": "css",
+                        },
                         "type": "text",
                     },
                 },
