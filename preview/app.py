@@ -27,6 +27,21 @@ class ConfigRequest(BaseModel):
     """Schema for config request body."""
 
     config_json: str
+    filepath: str | None = None
+
+
+class SaveConfigRequest(BaseModel):
+    """Schema for saving configuration request body."""
+
+    config_json: str
+    filepath: str | None = None
+
+
+class ExportConfigRequest(BaseModel):
+    """Schema for exporting configuration request body."""
+
+    config_json: str
+    filename: str | None = None
 
 
 @app.post("/api/config/validate")
@@ -35,10 +50,38 @@ def validate_config(req: ConfigRequest) -> dict[str, Any]:
     return validate_scraper_json(req.config_json)
 
 
+@app.post("/api/config/save")
+def save_config(req: SaveConfigRequest) -> dict[str, Any]:
+    """Save JSON configuration to file path on disk."""
+    try:
+        return session.save_config(req.config_json, filepath=req.filepath)
+    except Exception as err:
+        raise HTTPException(status_code=400, detail=str(err)) from err
+
+
+@app.post("/api/config/export")
+def export_config(req: ExportConfigRequest) -> Response:
+    """Export and download JSON configuration as attachment file."""
+    val = validate_scraper_json(req.config_json)
+    if not val["valid"]:
+        raise HTTPException(status_code=400, detail="Cannot export invalid JSON configuration.")
+
+    filename = req.filename
+    if not filename:
+        cfg_name = val.get("config", {}).get("name") if val.get("config") else None
+        filename = f"{cfg_name}.json" if cfg_name else "scraper_config.json"
+
+    if not filename.endswith(".json"):
+        filename += ".json"
+
+    headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+    return Response(content=req.config_json, media_type="application/json", headers=headers)
+
+
 @app.post("/api/session/load")
 def load_session(req: ConfigRequest) -> dict[str, Any]:
     """Load and start debug session with configuration string."""
-    session.load_config(req.config_json)
+    session.load_config(req.config_json, config_path=req.filepath)
     return session.start()
 
 
