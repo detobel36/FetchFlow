@@ -4,6 +4,8 @@ The **Scraper Preview & Debugger** is an interactive web tool for developing, te
 
 Thanks to its two-panel interface, you can edit your JSON scraper configuration on the left and preview execution results in real time on the right.
 
+![Scraper Preview & Debugger](images/preview-debugger.png)
+
 ---
 
 ## How to Start
