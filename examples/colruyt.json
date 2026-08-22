@@ -1,0 +1,41 @@
+{
+  "name": "colruyt_coca_cola_search",
+  "version": "1.0",
+  "variables": {
+    "search_term": "coca cola"
+  },
+  "steps": [
+    {
+      "id": "products",
+      "request": {
+        "method": "GET",
+        "url": "https://www.colruyt.be/fr/produits?method=user%20typed&o=product%20overview&page=1&searchTerm={{search_term}}&suggestion=none&type=product"
+      },
+      "extract": {
+        "selector": ".product-grid__item, .product-card",
+        "selector_type": "css"
+      },
+      "fields": {
+        "title": {
+          "selector": ".product-card__title, .product-name, h3",
+          "selector_type": "css",
+          "type": "text",
+          "transform": [
+            "trim"
+          ]
+        },
+        "price": {
+          "selector": ".product-card__price, .price-value",
+          "selector_type": "css",
+          "type": "text",
+          "transform": [
+            "trim",
+            {
+              "regex": "([0-9]+[.,][0-9]{2})"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
