@@ -17,16 +17,20 @@
       },
       "fields": {
         "id": {
-          "selector": ".product-id",
-          "selector_type": "css",
+          "extract": {
+            "selector": ".product-id",
+            "selector_type": "css"
+          },
           "type": "text",
           "transform": [
             "trim"
           ]
         },
         "title": {
-          "selector": "h3.title",
-          "selector_type": "css",
+          "extract": {
+            "selector": "h3.title",
+            "selector_type": "css"
+          },
           "type": "text",
           "transform": [
             "trim"
@@ -50,8 +54,10 @@
       },
       "fields": {
         "price": {
-          "selector": "//span[@class='price-value']",
-          "selector_type": "xpath",
+          "extract": {
+            "selector": "//span[@class='price-value']",
+            "selector_type": "xpath"
+          },
           "type": "text",
           "transform": [
             "trim",
@@ -61,8 +67,10 @@
           ]
         },
         "sku": {
-          "selector": ".sku-code",
-          "selector_type": "css",
+          "extract": {
+            "selector": ".sku-code",
+            "selector_type": "css"
+          },
           "type": "text",
           "transform": [
             "trim",

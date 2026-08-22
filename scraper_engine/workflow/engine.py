@@ -60,8 +60,9 @@ class StepExecutor:
         field_name: str | None = None,
     ) -> Any:  # noqa: ANN401
         """Extract value(s) for a single non-nested field definition."""
-        f_selector = field_cfg["selector"]
-        f_sel_type = field_cfg.get("selector_type", default_sel_type)
+        extract_cfg = field_cfg["extract"]
+        f_selector = extract_cfg["selector"]
+        f_sel_type = extract_cfg.get("selector_type", default_sel_type)
         f_type = field_cfg.get("type", "text")
         f_attr = field_cfg.get("attribute")
         f_transforms = field_cfg.get("transform", [])
@@ -118,9 +119,6 @@ class StepExecutor:
         if extract_cfg:
             sub_selector = extract_cfg["selector"]
             sub_sel_type = extract_cfg.get("selector_type", default_sel_type)
-        elif "selector" in field_cfg:
-            sub_selector = field_cfg["selector"]
-            sub_sel_type = field_cfg.get("selector_type", default_sel_type)
         else:
             sub_selector = None
             sub_sel_type = default_sel_type

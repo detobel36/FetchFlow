@@ -49,7 +49,7 @@ Transformations are configured as an ordered array of transformer keywords or pa
   "extract": { "selector": ".product" },
   "fields": {
     "clean_price": {
-      "selector": ".price-tag",
+      "extract": { "selector": ".price-tag" },
       "type": "text",
       "transform": [
         "trim",

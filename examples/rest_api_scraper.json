@@ -18,12 +18,16 @@
       },
       "fields": {
         "user_id": {
-          "selector": "$.id",
-          "selector_type": "jsonpath"
+          "extract": {
+            "selector": "$.id",
+            "selector_type": "jsonpath"
+          }
         },
         "username": {
-          "selector": "$.username",
-          "selector_type": "jsonpath",
+          "extract": {
+            "selector": "$.username",
+            "selector_type": "jsonpath"
+          },
           "transform": ["trim", "lower"]
         }
       }
@@ -45,12 +49,16 @@
       },
       "fields": {
         "post_id": {
-          "selector": "$.id",
-          "selector_type": "jsonpath"
+          "extract": {
+            "selector": "$.id",
+            "selector_type": "jsonpath"
+          }
         },
         "title": {
-          "selector": "$.title",
-          "selector_type": "jsonpath",
+          "extract": {
+            "selector": "$.title",
+            "selector_type": "jsonpath"
+          },
           "transform": ["trim"]
         }
       }

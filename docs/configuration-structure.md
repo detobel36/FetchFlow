@@ -39,12 +39,10 @@ classDiagram
         +String selector_type
     }
     class Field {
-        +String selector
-        +String selector_type
+        +Extract extract
         +String type
         +String attribute
         +List transform
-        +Extract extract
         +Map~String, Field~ fields
     }
 
@@ -94,12 +92,16 @@ classDiagram
       },
       "fields": {
         "product_id": {
-          "selector": "a.product-link",
+          "extract": {
+            "selector": "a.product-link"
+          },
           "attribute": "data-id",
           "type": "attribute"
         },
         "title": {
-          "selector": "h3.title",
+          "extract": {
+            "selector": "h3.title"
+          },
           "type": "text",
           "transform": ["trim"]
         }

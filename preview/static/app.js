@@ -24,14 +24,18 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         fields: {
           id: {
-            selector: ".product-id",
-            selector_type: "css",
+            extract: {
+              selector: ".product-id",
+              selector_type: "css"
+            },
             type: "text",
             transform: ["trim"]
           },
           title: {
-            selector: "h3.title",
-            selector_type: "css",
+            extract: {
+              selector: "h3.title",
+              selector_type: "css"
+            },
             type: "text",
             transform: ["trim"]
           }
@@ -53,8 +57,10 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         fields: {
           price: {
-            selector: ".price-value",
-            selector_type: "css",
+            extract: {
+              selector: ".price-value",
+              selector_type: "css"
+            },
             type: "text",
             transform: ["trim"]
           }
@@ -222,7 +228,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (context === "extract") {
         keys = ["selector", "selector_type"];
       } else if (context === "fields") {
-        keys = ["selector", "selector_type", "type", "attribute", "transform", "fields", "extract"];
+        keys = ["extract", "type", "attribute", "transform", "fields"];
       }
 
       suggestions = keys.filter(k => k.toLowerCase().startsWith(prefix.toLowerCase()));
