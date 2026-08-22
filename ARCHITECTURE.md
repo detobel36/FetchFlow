@@ -65,11 +65,7 @@ During system review and auditing, the following architectural problematic point
 - **Issue**: `DebugSession` retains all step iteration execution traces in an in-memory dictionary `self.history[(step_index, iteration_index)]`. For workflows processing thousands of loop items or large HTML documents, this unconstrained history can lead to significant memory consumption.
 - **Recommendation**: Introduce a configurable max history size or LRU eviction strategy for large debug sessions in future iterations.
 
-### 3.4. Code Duplication in Workflow Execution Pipelines (`jexflow/workflow/engine.py`)
-- **Issue**: `StepExecutor` previously maintained near-identical duplicate implementation paths for standard execution (`execute_single_request`, `_execute_for_each`) and trace-enabled execution (`execute_single_request_with_trace`, `_execute_for_each_with_trace`).
-- **Remediation**: Refactored `StepExecutor` so that standard non-trace methods delegate cleanly to trace-generating methods, eliminating code duplication while preserving backward compatibility.
-
-### 3.5. Absence of Explicit Request Timeout & Rate Limiting Controls in Config
+### 3.4. Absence of Explicit Request Timeout & Rate Limiting Controls in Config
 - **Issue**: While `HTTPXClient` defaults to a 30-second timeout, individual JSON workflow step configurations cannot specify custom timeouts, retry strategies, or delay intervals between loop iterations.
 - **Recommendation**: Extend the JSON Schema and `HTTPRequest` model to support per-step timeout override, retry policy, and inter-request delay settings.
 
