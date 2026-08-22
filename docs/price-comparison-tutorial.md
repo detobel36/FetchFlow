@@ -1,8 +1,8 @@
 # Tutorial: Price Comparison Across Multiple E-Commerce Stores
 
-This tutorial demonstrates how to perform price comparisons across multiple e-commerce websites (such as **Delhaize** and **Colruyt**) using Jexflow without writing website-specific scraping logic in Python.
+This tutorial demonstrates how to perform price comparisons across multiple e-commerce websites (such as **Delhaize** and **Colruyt**) using Jexflow as a Python library without writing website-specific scraping logic in Python.
 
-By defining the site-specific extraction rules in configuration JSON files (such as `delhaize.json` and `colruyt.json`), you can write a generic Python runner script that executes all steps for each store and aggregates the results for easy comparison.
+By defining the site-specific extraction rules in configuration JSON files (such as `delhaize.json` and `colruyt.json`), an external developer can write a single, generic Python script that imports `Scraper` from `scraper_engine`, executes all workflow steps for each store, and aggregates the results for price comparison.
 
 ---
 
@@ -12,7 +12,7 @@ Imagine you want to compare the price of **Coca-Cola** between two Belgian super
 - **Delhaize**: `https://www.delhaize.be/shop/search?q=coca%20cola%3Arelevance&text=coca%20cola&sort=relevance`
 - **Colruyt**: `https://www.colruyt.be/fr/produits?method=user%20typed&o=product%20overview&page=1&searchTerm=coca%20cola&suggestion=none&type=product`
 
-Instead of writing custom BeautifulSoup or Selenium code for each website, you create a JSON configuration for each target site. Your Python application then loads these configurations and processes them generically using the `Scraper` engine.
+Instead of writing custom BeautifulSoup or Selenium code for each website, you create a JSON configuration for each target site. Your Python application then imports the `Scraper` class from `scraper_engine` and executes them generically.
 
 ---
 
@@ -20,7 +20,7 @@ Instead of writing custom BeautifulSoup or Selenium code for each website, you c
 
 The JSON configuration files reside in the `examples/` directory.
 
-### `examples/delhaize.json`
+### [`examples/delhaize.json`](../examples/delhaize.json)
 ```json
 {
   "name": "delhaize_coca_cola_search",
@@ -65,7 +65,7 @@ The JSON configuration files reside in the `examples/` directory.
 }
 ```
 
-### `examples/colruyt.json`
+### [`examples/colruyt.json`](../examples/colruyt.json)
 ```json
 {
   "name": "colruyt_coca_cola_search",
@@ -112,31 +112,33 @@ The JSON configuration files reside in the `examples/` directory.
 
 ---
 
-## 3. Generic Python Execution Code
+## 3. Generic Python Execution Code (Using Jexflow as a Library)
 
-Below is a complete Python script showing how to run multiple store configurations dynamically without store-specific logic.
+Below is a complete example of how an external developer uses Jexflow programmatically in Python:
 
 ```python
 from pathlib import Path
 from scraper_engine import Scraper
 
 def compare_prices(config_paths: list[str | Path]) -> dict[str, list[dict]]:
-    """Generic price comparison function across multiple stores.
+    """Generic price comparison function using Jexflow as a Python library.
 
     Args:
-        config_paths: List of JSON configuration file paths for stores.
+        config_paths: List of file paths to JSON configurations.
 
     Returns:
-        A dictionary mapping store/configuration name to extracted product items.
+        A dictionary mapping store configuration name to extracted product items.
     """
     comparison_results = {}
 
     for config_path in config_paths:
-        # Load and execute the configuration generically
+        # Initialize Scraper directly with the JSON config file path
         scraper = Scraper(config_path)
+
+        # Execute all workflow steps generically
         results = scraper.run()
 
-        # Use config name or file stem as key
+        # Store results under the workflow name
         store_name = scraper.config.get("name", str(config_path))
         comparison_results[store_name] = results
 
@@ -148,8 +150,10 @@ if __name__ == "__main__":
         Path("examples/colruyt.json"),
     ]
 
+    # Run price comparison for both stores
     all_prices = compare_prices(configs)
 
+    # Display results
     for store, items in all_prices.items():
         print(f"\n=== {store} ===")
         for item in items:
@@ -162,6 +166,6 @@ if __name__ == "__main__":
 
 ## 4. Key Takeaways
 
-1. **Separation of Concerns**: HTML parsing rules and request URLs are defined entirely in JSON configurations (`delhaize.json` and `colruyt.json`), while Python code remains generic.
-2. **Scalability**: To add a new store (e.g., Carrefour or Albert Heijn), simply create a new JSON configuration file and append it to `config_paths`. No code modifications are needed.
-3. **Data Uniformity**: Using transformation pipelines (such as `trim` and `regex`) standardizes output fields (e.g. converting raw price text like `"€ 1.85 / st"` into clean numbers like `"1.85"`).
+1. **Separation of Concerns**: HTML parsing rules and request URLs are defined entirely in JSON configurations ([`delhaize.json`](../examples/delhaize.json) and [`colruyt.json`](../examples/colruyt.json)), while Python code remains 100% generic.
+2. **Scalability**: To add a new store (e.g., Carrefour or Albert Heijn), simply create a new JSON configuration file and add its path to `config_paths`. No Python code changes are required.
+3. **Data Uniformity**: Transformation pipelines (such as `trim` and `regex`) standardize output fields so all stores yield consistent output keys and formatted numbers.
