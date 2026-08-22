@@ -1,9 +1,9 @@
 from os import PathLike
 from typing import Any
 
-from scraper_engine.config import ConfigLoader
-from scraper_engine.http import HTTPClient, HTTPXClient
-from scraper_engine.workflow import WorkflowEngine
+from jexflow.config import ConfigLoader
+from jexflow.http import HTTPClient, HTTPXClient
+from jexflow.workflow import WorkflowEngine
 
 
 class Scraper:

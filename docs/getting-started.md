@@ -26,7 +26,7 @@ Jexflow includes a CLI for executing and testing JSON scrapers without writing P
 You can run an example config from the repository:
 
 ```bash
-python -m scraper_engine examples/getting_started.json
+python -m jexflow examples/getting_started.json
 ```
 
 **Options:**
@@ -37,7 +37,7 @@ python -m scraper_engine examples/getting_started.json
 Save results directly to a file:
 
 ```bash
-python -m scraper_engine examples/getting_started.json -o results.json
+python -m jexflow examples/getting_started.json -o results.json
 ```
 
 ---
@@ -47,7 +47,7 @@ python -m scraper_engine examples/getting_started.json -o results.json
 Execute scrapers inside Python applications:
 
 ```python
-from scraper_engine import Scraper
+from jexflow import Scraper
 
 scraper = Scraper("examples/getting_started.json")
 results = scraper.run()

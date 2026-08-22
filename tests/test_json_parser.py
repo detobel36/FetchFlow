@@ -1,8 +1,8 @@
 import pytest
 
-from scraper_engine.errors import ParsingError
-from scraper_engine.extraction import ElementExtractor
-from scraper_engine.parser import (
+from jexflow.errors import ParsingError
+from jexflow.extraction import ElementExtractor
+from jexflow.parser import (
     BaseDocument,
     JSONDocument,
     JSONPathSelectorEngine,

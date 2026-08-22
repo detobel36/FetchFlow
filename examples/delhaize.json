@@ -17,16 +17,20 @@
       },
       "fields": {
         "title": {
-          "selector": ".product-title, .product-name, h3",
-          "selector_type": "css",
+          "extract": {
+            "selector": ".product-title, .product-name, h3",
+            "selector_type": "css"
+          },
           "type": "text",
           "transform": [
             "trim"
           ]
         },
         "price": {
-          "selector": ".product-price, .price-amount",
-          "selector_type": "css",
+          "extract": {
+            "selector": ".product-price, .price-amount",
+            "selector_type": "css"
+          },
           "type": "text",
           "transform": [
             "trim",

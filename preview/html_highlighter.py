@@ -4,7 +4,7 @@ from urllib.parse import quote, urljoin
 
 import lxml.html
 
-from scraper_engine.parser import get_selector_engine
+from jexflow.parser import get_selector_engine
 
 logger = logging.getLogger(__name__)
 

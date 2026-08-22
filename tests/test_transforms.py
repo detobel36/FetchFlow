@@ -1,4 +1,4 @@
-from scraper_engine.transforms import TransformerRegistry
+from jexflow.transforms import TransformerRegistry
 
 
 def test_trim_lower_upper():

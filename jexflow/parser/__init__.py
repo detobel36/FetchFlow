@@ -1,10 +1,10 @@
 from collections.abc import Callable
 from typing import Any
 
-from scraper_engine.errors import ParsingError
-from scraper_engine.parser.base import BaseDocument, SelectorEngine
-from scraper_engine.parser.html import CSSSelectorEngine, HTMLDocument, XPathSelectorEngine
-from scraper_engine.parser.json_parser import JSONDocument, JSONPathSelectorEngine
+from jexflow.errors import ParsingError
+from jexflow.parser.base import BaseDocument, SelectorEngine
+from jexflow.parser.html import CSSSelectorEngine, HTMLDocument, XPathSelectorEngine
+from jexflow.parser.json_parser import JSONDocument, JSONPathSelectorEngine
 
 # Document parsers registry
 DOCUMENT_PARSERS: dict[str, Callable[[Any], BaseDocument]] = {
@@ -55,7 +55,7 @@ def get_selector_engine(selector_type: str = "css") -> SelectorEngine:
 
 def __getattr__(name: str) -> Any:  # noqa: ANN401
     if name == "ElementExtractor":
-        from scraper_engine.extraction.extractor import ElementExtractor  # noqa: PLC0415
+        from jexflow.extraction.extractor import ElementExtractor  # noqa: PLC0415
 
         return ElementExtractor
     msg = f"module {__name__!r} has no attribute {name!r}"

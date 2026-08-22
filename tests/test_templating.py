@@ -1,7 +1,7 @@
 import pytest
 
-from scraper_engine.errors import TemplateError
-from scraper_engine.templating import TemplateRenderer
+from jexflow.errors import TemplateError
+from jexflow.templating import TemplateRenderer
 
 
 def test_template_render_simple():

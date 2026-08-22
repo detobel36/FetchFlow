@@ -3,8 +3,8 @@ import json
 import sys
 from pathlib import Path
 
-from scraper_engine.errors import ScraperEngineError
-from scraper_engine.scraper import Scraper
+from jexflow.errors import ScraperEngineError
+from jexflow.scraper import Scraper
 
 
 def main(args: list[str] | None = None) -> int:

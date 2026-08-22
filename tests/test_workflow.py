@@ -1,7 +1,7 @@
 import httpx
 
-from scraper_engine import Scraper
-from scraper_engine.config.validator import ConfigValidator
+from jexflow import Scraper
+from jexflow.config.validator import ConfigValidator
 
 
 def test_workflow_execution():
@@ -113,7 +113,7 @@ def test_workflow_execution():
         ],
     }
 
-    from scraper_engine.http import HTTPXClient
+    from jexflow.http import HTTPXClient
 
     client_wrapper = HTTPXClient(client=http_client)
     scraper = Scraper(config=config, http_client=client_wrapper)
@@ -229,7 +229,7 @@ def test_json_rest_api_workflow():
 
     ConfigValidator.validate(config)
 
-    from scraper_engine.http import HTTPXClient
+    from jexflow.http import HTTPXClient
 
     client_wrapper = HTTPXClient(client=http_client)
     scraper = Scraper(config=config, http_client=client_wrapper)
@@ -368,7 +368,7 @@ def test_nested_loops_same_page_and_for_each_rest():
 
     ConfigValidator.validate(config)
 
-    from scraper_engine.http import HTTPXClient
+    from jexflow.http import HTTPXClient
 
     client_wrapper = HTTPXClient(client=http_client)
     scraper = Scraper(config=config, http_client=client_wrapper)
@@ -442,7 +442,7 @@ def test_workflow_positional_selector():
 
     ConfigValidator.validate(config)
 
-    from scraper_engine.http import HTTPXClient
+    from jexflow.http import HTTPXClient
 
     client_wrapper = HTTPXClient(client=http_client)
     scraper = Scraper(config=config, http_client=client_wrapper)

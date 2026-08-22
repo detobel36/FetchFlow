@@ -26,25 +26,25 @@ The **Config-Driven Python Web Scraping Engine** is a lightweight, embeddable Py
 
 ## 2. Component Design & Abstractions
 
-1. **Config Layer (`scraper_engine.config`)**:
+1. **Config Layer (`jexflow.config`)**:
    - Validates JSON configurations against JSON Schema (`Draft7Validator`). Fails fast with precise field path error messages.
 
-2. **HTTP Layer (`scraper_engine.http`)**:
+2. **HTTP Layer (`jexflow.http`)**:
    - `HTTPClient` interface with `HTTPXClient` adapter using `httpx`. Reuses connection pools, supports custom headers and parameters.
 
-3. **Templating System (`scraper_engine.templating`)**:
+3. **Templating System (`jexflow.templating`)**:
    - `TemplateRenderer` performs variable substitution (`{{var_name}}`) across strings, dictionary structures, and request parameters.
 
-4. **Parser & Extractor Layer (`scraper_engine.parser`, `scraper_engine.extraction`)**:
+4. **Parser & Extractor Layer (`jexflow.parser`, `jexflow.extraction`)**:
    - Generic `BaseDocument` interface implemented by `HTMLDocument` (lxml) and `JSONDocument` (JSON).
    - Registries for dynamic parser registration (`register_document_parser`) and selector engines (`register_selector_engine`).
    - `CSSSelectorEngine`, `XPathSelectorEngine`, and `JSONPathSelectorEngine` for CSS, XPath, and JSONPath querying.
    - `ElementExtractor` extracts text, attributes, or JSON primitive fields predictably.
 
-5. **Transformations Pipeline (`scraper_engine.transforms`)**:
+5. **Transformations Pipeline (`jexflow.transforms`)**:
    - Registry-based (`TransformerRegistry`) pipeline supporting `trim`, `lower`, `upper`, `replace`, `split`, and `regex`.
 
-6. **Workflow Executor (`scraper_engine.workflow`)**:
+6. **Workflow Executor (`jexflow.workflow`)**:
    - `ExecutionContext` maintains a scope stack for step results, global variables, and loop contexts.
    - `StepExecutor` executes sequential steps and `for_each` loops on both HTML and REST JSON response payloads.
 

@@ -1,12 +1,12 @@
 import time
 from typing import Any
 
-from scraper_engine.extraction import ElementExtractor
-from scraper_engine.http import HTTPClient, HTTPRequest
-from scraper_engine.parser import get_document
-from scraper_engine.templating import TemplateRenderer
-from scraper_engine.transforms import TransformerRegistry
-from scraper_engine.workflow.context import ExecutionContext
+from jexflow.extraction import ElementExtractor
+from jexflow.http import HTTPClient, HTTPRequest
+from jexflow.parser import get_document
+from jexflow.templating import TemplateRenderer
+from jexflow.transforms import TransformerRegistry
+from jexflow.workflow.context import ExecutionContext
 
 
 def resolve_field_value(item: Any, field_path: str) -> Any:  # noqa: ANN401

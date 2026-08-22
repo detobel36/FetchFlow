@@ -2,7 +2,7 @@
 
 This tutorial demonstrates how to perform price comparisons across multiple e-commerce websites (such as **Delhaize** and **Colruyt**) using Jexflow as a Python library without writing website-specific scraping logic in Python.
 
-By defining the site-specific extraction rules in configuration JSON files (such as `delhaize.json` and `colruyt.json`), an external developer can write a single, generic Python script that imports `Scraper` from `scraper_engine`, executes all workflow steps for each store, and aggregates the results for price comparison.
+By defining the site-specific extraction rules in configuration JSON files (such as `delhaize.json` and `colruyt.json`), an external developer can write a single, generic Python script that imports `Scraper` from `jexflow`, executes all workflow steps for each store, and aggregates the results for price comparison.
 
 ---
 
@@ -12,7 +12,7 @@ Imagine you want to compare the price of **Coca-Cola** between two Belgian super
 - **Delhaize**: `https://www.delhaize.be/shop/search?q=coca%20cola%3Arelevance&text=coca%20cola&sort=relevance`
 - **Colruyt**: `https://www.colruyt.be/fr/produits?method=user%20typed&o=product%20overview&page=1&searchTerm=coca%20cola&suggestion=none&type=product`
 
-Instead of writing custom BeautifulSoup or Selenium code for each website, you create a JSON configuration for each target site. Your Python application then imports the `Scraper` class from `scraper_engine` and executes them generically.
+Instead of writing custom BeautifulSoup or Selenium code for each website, you create a JSON configuration for each target site. Your Python application then imports the `Scraper` class from `jexflow` and executes them generically.
 
 ---
 
@@ -25,10 +25,10 @@ An external developer using Jexflow in their project will first add the package 
 -e git+https://github.com/your-org/jexflow.git#egg=jexflow
 ```
 
-Once installed via `pip install -r requirements.txt`, the engine module is imported in Python as `scraper_engine`:
+Once installed via `pip install -r requirements.txt`, the engine module is imported in Python as `jexflow`:
 
 ```python
-from scraper_engine import Scraper
+from jexflow import Scraper
 ```
 
 ---
@@ -58,16 +58,20 @@ The JSON configuration files reside in the `examples/` directory.
       },
       "fields": {
         "title": {
-          "selector": ".product-title, .product-name, h3",
-          "selector_type": "css",
+          "extract": {
+            "selector": ".product-title, .product-name, h3",
+            "selector_type": "css"
+          },
           "type": "text",
           "transform": [
             "trim"
           ]
         },
         "price": {
-          "selector": ".product-price, .price-amount",
-          "selector_type": "css",
+          "extract": {
+            "selector": ".product-price, .price-amount",
+            "selector_type": "css"
+          },
           "type": "text",
           "transform": [
             "trim",
@@ -103,16 +107,20 @@ The JSON configuration files reside in the `examples/` directory.
       },
       "fields": {
         "title": {
-          "selector": ".product-card__title, .product-name, h3",
-          "selector_type": "css",
+          "extract": {
+            "selector": ".product-card__title, .product-name, h3",
+            "selector_type": "css"
+          },
           "type": "text",
           "transform": [
             "trim"
           ]
         },
         "price": {
-          "selector": ".product-card__price, .price-value",
-          "selector_type": "css",
+          "extract": {
+            "selector": ".product-card__price, .price-value",
+            "selector_type": "css"
+          },
           "type": "text",
           "transform": [
             "trim",
@@ -135,7 +143,7 @@ Below is a complete example of how an external developer uses Jexflow programmat
 
 ```python
 from pathlib import Path
-from scraper_engine import Scraper
+from jexflow import Scraper
 
 def compare_prices(config_paths: list[str | Path]) -> dict[str, list[dict]]:
     """Generic price comparison function using Jexflow as a Python library.

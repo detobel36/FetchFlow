@@ -2,8 +2,8 @@ import json
 import re
 from typing import Any
 
-from scraper_engine.config.validator import ConfigValidator
-from scraper_engine.errors import ConfigValidationError
+from jexflow.config.validator import ConfigValidator
+from jexflow.errors import ConfigValidationError
 
 
 def find_key_line_number(json_str: str, key_path: list[str | int]) -> int:

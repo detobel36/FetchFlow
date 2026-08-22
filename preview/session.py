@@ -2,11 +2,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+from jexflow.http import HTTPClient, HTTPXClient
+from jexflow.workflow.context import ExecutionContext
+from jexflow.workflow.engine import StepExecutor
 from preview.html_highlighter import highlight_html_elements
 from preview.validation import find_key_line_number, validate_scraper_json
-from scraper_engine.http import HTTPClient, HTTPXClient
-from scraper_engine.workflow.context import ExecutionContext
-from scraper_engine.workflow.engine import StepExecutor
 
 
 class DebugSession:
