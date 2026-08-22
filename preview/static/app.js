@@ -2,6 +2,7 @@ let editor = null;
 
 document.addEventListener("DOMContentLoaded", function () {
   let activeLineMarker = null;
+  let currentConfigPath = null;
 
   const LOCAL_STORAGE_KEY = "scraper_config_draft";
 
@@ -501,6 +502,10 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
+    if (state.config_path) {
+      currentConfigPath = state.config_path;
+    }
+
     updateValidationAlert(state.validation);
 
     if (state.validation && !state.validation.valid) {
@@ -617,12 +622,70 @@ document.addEventListener("DOMContentLoaded", function () {
         if (editor) {
           editor.setValue(content);
           localStorage.setItem(LOCAL_STORAGE_KEY, content);
-          handleAction(btnApply, () => apiCall("/api/session/load", { config_json: content }));
+          currentConfigPath = file.name;
+          handleAction(btnApply, () => apiCall("/api/session/load", { config_json: content, filepath: file.name }));
         }
       };
       reader.readAsText(file);
       // reset value so re-uploading the same file works if needed
       fileImportInput.value = "";
+    });
+  }
+
+  // Export Listener
+  const btnExport = document.getElementById("btn-export");
+  if (btnExport) {
+    btnExport.addEventListener("click", () => {
+      try {
+        const jsonStr = editor.getValue();
+        let filename = "scraper_config.json";
+        try {
+          const parsed = JSON.parse(jsonStr);
+          if (parsed && parsed.name) {
+            filename = `${parsed.name}.json`;
+          }
+        } catch (e) {
+          // ignore error if invalid json
+        }
+
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert("Failed to export configuration: " + err.message);
+      }
+    });
+  }
+
+  // Save Listener
+  const btnSave = document.getElementById("btn-save");
+  if (btnSave) {
+    btnSave.addEventListener("click", async () => {
+      let targetPath = currentConfigPath;
+      if (!targetPath) {
+        targetPath = prompt("Enter file path to save configuration:", "config.json");
+        if (!targetPath) return; // User cancelled prompt
+      }
+
+      const jsonStr = editor.getValue();
+      const res = await apiCall("/api/config/save", {
+        config_json: jsonStr,
+        filepath: targetPath
+      });
+
+      if (res && res.success) {
+        currentConfigPath = res.filepath;
+        alert(res.message || `Configuration saved to ${res.filepath}`);
+      } else {
+        const errorMsg = (res && res.detail) || "Failed to save configuration.";
+        alert(`Save Error: ${errorMsg}`);
+      }
     });
   }
 

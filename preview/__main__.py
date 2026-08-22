@@ -22,9 +22,10 @@ def main() -> None:
         if config_path.exists():
             print(f"Loading initial configuration from: {config_path}")  # noqa: T201
             raw_json = config_path.read_text(encoding="utf-8")
-            session.load_config(raw_json)
+            session.load_config(raw_json, config_path=config_path)
         else:
             print(f"Warning: Configuration file not found at '{config_path}'")  # noqa: T201
+            session.config_path = config_path
 
     print(f"Starting Scraper Preview & Debugger on http://{args.host}:{args.port}")  # noqa: T201
     uvicorn.run(app, host=args.host, port=args.port)

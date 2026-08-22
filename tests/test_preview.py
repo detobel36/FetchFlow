@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import httpx
 from fastapi.testclient import TestClient
 
@@ -228,3 +230,78 @@ def test_proxy_endpoint_validation():
     # Test missing url
     r_missing = test_client.get("/api/proxy")
     assert r_missing.status_code == 422
+
+
+def test_debug_session_save_config(tmp_path: Path):
+    target_file = tmp_path / "config_save_test.json"
+    valid_json = """{
+        "name": "save_test_scraper",
+        "steps": [
+            {
+                "id": "step1",
+                "request": {
+                    "method": "GET",
+                    "url": "https://example.com"
+                }
+            }
+        ]
+    }"""
+
+    session = DebugSession(json_config=valid_json)
+    res = session.save_config(valid_json, filepath=target_file)
+
+    assert res["success"] is True
+    assert target_file.exists()
+    assert target_file.read_text(encoding="utf-8") == valid_json
+    assert session.config_path == target_file
+    assert session.get_state()["config_path"] == str(target_file.resolve())
+
+    # Attempt saving invalid json
+    invalid_json = "{"
+    import pytest
+    with pytest.raises(ValueError, match="Cannot save configuration due to syntax error"):
+        session.save_config(invalid_json, filepath=target_file)
+
+
+def test_fastapi_export_and_save_endpoints(tmp_path: Path):
+    test_client = TestClient(app)
+
+    config_str = """{
+        "name": "export_save_test",
+        "steps": [
+            {
+                "id": "s1",
+                "request": {
+                    "method": "GET",
+                    "url": "https://example.com"
+                }
+            }
+        ]
+    }"""
+
+    # Test export with explicit filename
+    r_exp1 = test_client.post("/api/config/export", json={"config_json": config_str, "filename": "custom_name.json"})
+    assert r_exp1.status_code == 200
+    assert r_exp1.headers["content-disposition"] == 'attachment; filename="custom_name.json"'
+    assert r_exp1.text == config_str
+
+    # Test export with default auto-derived filename from config name
+    r_exp2 = test_client.post("/api/config/export", json={"config_json": config_str})
+    assert r_exp2.status_code == 200
+    assert r_exp2.headers["content-disposition"] == 'attachment; filename="export_save_test.json"'
+
+    # Test export with invalid config
+    r_exp_err = test_client.post("/api/config/export", json={"config_json": "{"})
+    assert r_exp_err.status_code == 400
+
+    # Test save endpoint
+    save_file = tmp_path / "saved_via_api.json"
+    r_save = test_client.post("/api/config/save", json={"config_json": config_str, "filepath": str(save_file)})
+    assert r_save.status_code == 200
+    assert r_save.json()["success"] is True
+    assert save_file.exists()
+    assert save_file.read_text(encoding="utf-8") == config_str
+
+    # Test save with invalid json
+    r_save_err = test_client.post("/api/config/save", json={"config_json": "{", "filepath": str(save_file)})
+    assert r_save_err.status_code == 400

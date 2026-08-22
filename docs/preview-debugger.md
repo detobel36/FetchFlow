@@ -53,6 +53,11 @@ python -m preview examples/ecommerce_scraper.json --host 0.0.0.0 --port 8080
 
 ### 1. Two-Panel Interface
 - **Left Panel (JSON Configuration Editor)**: Live CodeMirror editor with syntax highlighting, line numbers, JSON syntax validation error banners, schema validation, and automatic scrolling/highlighting of active workflow step lines.
+  - **📁 Import**: Load an existing JSON configuration file into the editor.
+  - **📥 Export**: Download the active configuration as a `.json` file.
+  - **💾 Save**: Save changes directly to disk at the active file path (or prompt for target save path).
+  - **✨ Format**: Automatically format and indent JSON in the editor.
+  - **Apply & Validate**: Apply changes and validate schema without restarting navigation.
 - **Right Panel (Results & Response Preview)**:
   - **🌐 HTML Preview**: Sandboxed rendering of captured HTML with visual CSS outlines around matching container elements and field elements, plus hover tooltips showing selector metadata.
   - **📊 Extracted Data**: JSON view of extracted fields and records for the active step/iteration.

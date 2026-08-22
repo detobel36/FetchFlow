@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import Any
 
 from preview.html_highlighter import highlight_html_elements
@@ -21,6 +22,7 @@ class DebugSession:
         self.step_executor = StepExecutor(self.http_client)
 
         self.raw_json: str = ""
+        self.config_path: Path | None = None
         self.config: dict[str, Any] | None = None
         self.validation_result: dict[str, Any] = {"valid": False, "syntax_error": None, "schema_errors": []}
 
@@ -39,9 +41,11 @@ class DebugSession:
             else:
                 self.load_config(str(json_config))
 
-    def load_config(self, json_str: str) -> dict[str, Any]:
+    def load_config(self, json_str: str, config_path: str | Path | None = None) -> dict[str, Any]:
         """Update and validate JSON configuration."""
         self.raw_json = json_str
+        if config_path is not None:
+            self.config_path = Path(config_path)
         val_res = validate_scraper_json(json_str)
         self.validation_result = val_res
 
@@ -79,6 +83,31 @@ class DebugSession:
     def restart(self) -> dict[str, Any]:
         """Reset debug session and start over from first step."""
         return self.start()
+
+    def save_config(self, json_str: str, filepath: str | Path | None = None) -> dict[str, Any]:
+        """Validate JSON configuration and save it to disk."""
+        val_res = validate_scraper_json(json_str)
+        if not val_res["valid"]:
+            msg = "Cannot save invalid JSON configuration."
+            if val_res.get("syntax_error"):
+                msg = f"Cannot save configuration due to syntax error: {val_res['syntax_error'].get('message')}"
+            elif val_res.get("schema_errors"):
+                msg = f"Cannot save configuration due to schema error: {val_res['schema_errors'][0].get('message')}"
+            raise ValueError(msg)
+
+        target_path = Path(filepath) if filepath else self.config_path
+        if not target_path:
+            msg = "No target file path specified for saving configuration."
+            raise ValueError(msg)
+
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        target_path.write_text(json_str, encoding="utf-8")
+        self.load_config(json_str, config_path=target_path)
+        return {
+            "success": True,
+            "filepath": str(target_path.resolve()),
+            "message": f"Configuration successfully saved to {target_path}",
+        }
 
     def _execute_step_and_cache(self, step_idx: int) -> None:
         """Execute step at step_idx using real scraper engine and store traces in history."""
@@ -228,4 +257,5 @@ class DebugSession:
             "error": trace.get("error") if trace else None,
             "highlighted_html": highlighted_html,
             "raw_html": trace["response"].get("text", "") if trace and trace.get("response") else "",
+            "config_path": str(self.config_path.resolve()) if self.config_path else None,
         }
