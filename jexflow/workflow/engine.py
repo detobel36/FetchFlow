@@ -6,29 +6,8 @@ from jexflow.http import HTTPClient, HTTPRequest
 from jexflow.parser import get_document
 from jexflow.templating import TemplateRenderer
 from jexflow.transforms import TransformerRegistry
+from jexflow.workflow.conditions import ConditionEvaluator, resolve_field_value
 from jexflow.workflow.context import ExecutionContext
-
-
-def resolve_field_value(item: Any, field_path: str) -> Any:  # noqa: ANN401
-    """Resolve a dot-separated field path from an item structure."""
-    parts = field_path.split(".")
-    current = item
-    for part in parts:
-        if isinstance(current, dict):
-            current = current.get(part)
-        elif isinstance(current, list):
-            res = []
-            for elem in current:
-                if isinstance(elem, dict) and part in elem:
-                    val = elem[part]
-                    if isinstance(val, list):
-                        res.extend(val)
-                    else:
-                        res.append(val)
-            current = res
-        else:
-            return None
-    return current
 
 
 class StepExecutor:
@@ -272,6 +251,16 @@ class StepExecutor:
                 )
                 results.append(item_data)
 
+        # Filter results based on conditions if specified
+        conditions = step_config.get("conditions")
+        if conditions:
+            filtered_results = [
+                item for item in results
+                if ConditionEvaluator.evaluate_conditions(conditions, item, tpl_ctx)
+            ]
+        else:
+            filtered_results = results
+
         trace = {
             "step_id": step_config.get("id"),
             "request": {
@@ -295,10 +284,10 @@ class StepExecutor:
                 "match_count": len(containers),
             },
             "fields": field_traces,
-            "results": results,
+            "results": filtered_results,
         }
 
-        return results, trace
+        return filtered_results, trace
 
     def execute_single_request(self, step_config: dict[str, Any], context: ExecutionContext) -> list[dict[str, Any]]:
         """Execute a single request for a workflow step."""

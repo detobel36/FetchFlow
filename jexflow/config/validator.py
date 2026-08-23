@@ -40,6 +40,30 @@ SCRAPER_CONFIG_SCHEMA: dict[str, Any] = {
                     "type": "object",
                     "additionalProperties": {"$ref": "#/definitions/field"},
                 },
+                "conditions": {
+                    "type": "array",
+                    "items": {"$ref": "#/definitions/condition"},
+                },
+            },
+            "additionalProperties": False,
+        },
+        "condition": {
+            "type": "object",
+            "required": ["operator", "value"],
+            "properties": {
+                "field": {"type": "string"},
+                "operator": {
+                    "type": "string",
+                    "enum": [
+                        "contains",
+                        "not_contains",
+                        "equals",
+                        "not_equals",
+                        "bigger_than",
+                        "smaller_than",
+                    ],
+                },
+                "value": {},
             },
             "additionalProperties": False,
         },

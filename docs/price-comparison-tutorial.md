@@ -80,7 +80,14 @@ The JSON configuration files reside in the `examples/` directory.
             }
           ]
         }
-      }
+      },
+      "conditions": [
+        {
+          "field": "title",
+          "operator": "contains",
+          "value": "original"
+        }
+      ]
     }
   ]
 }
@@ -129,7 +136,14 @@ The JSON configuration files reside in the `examples/` directory.
             }
           ]
         }
-      }
+      },
+      "conditions": [
+        {
+          "field": "title",
+          "operator": "contains",
+          "value": "regular"
+        }
+      ]
     }
   ]
 }

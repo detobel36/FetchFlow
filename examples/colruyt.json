@@ -39,7 +39,14 @@
             }
           ]
         }
-      }
+      },
+      "conditions": [
+        {
+          "field": "title",
+          "operator": "contains",
+          "value": "regular"
+        }
+      ]
     }
   ]
 }
