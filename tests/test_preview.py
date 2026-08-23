@@ -231,6 +231,20 @@ def test_proxy_endpoint_validation():
     r_missing = test_client.get("/api/proxy")
     assert r_missing.status_code == 422
 
+    # Test forbidden private / loopback hosts (SSRF prevention)
+    forbidden_urls = [
+        "http://localhost/admin",
+        "http://127.0.0.1:8000/api/session/state",
+        "http://169.254.169.254/latest/meta-data/",
+        "http://10.0.0.1/private",
+        "http://192.168.1.1/router",
+        "http://172.16.0.1/internal",
+    ]
+    for target in forbidden_urls:
+        r_ssrf = test_client.get(f"/api/proxy?url={target}")
+        assert r_ssrf.status_code == 400
+        assert "forbidden" in r_ssrf.json()["detail"].lower()
+
 
 def test_debug_session_save_config(tmp_path: Path):
     target_file = tmp_path / "config_save_test.json"

@@ -1,5 +1,8 @@
+import ipaddress
+import socket
 from pathlib import Path
 from typing import Annotated, Any
+from urllib.parse import urlparse
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query, Response
@@ -147,13 +150,57 @@ def get_preview_html() -> Response:
     return Response(content=html, media_type="text/html")
 
 
+def is_forbidden_ip(ip_str: str) -> bool:
+    """Check if IP address is private, loopback, link-local, multicast, reserved, or unspecified."""
+    try:
+        ip = ipaddress.ip_address(ip_str)
+    except ValueError:
+        return False
+    else:
+        return (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        )
+
+
+def validate_proxy_url(url: str) -> None:
+    """Validate proxy target URL to prevent Server-Side Request Forgery (SSRF)."""
+    if not url or not url.startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="Invalid URL scheme. Must start with http:// or https://")
+
+    parsed = urlparse(url)
+    hostname = parsed.hostname
+    if not hostname:
+        raise HTTPException(status_code=400, detail="Invalid URL: Missing hostname.")
+
+    hostname_lower = hostname.lower()
+    forbidden_msg = "Access to private or local network resources is forbidden via proxy."
+    if hostname_lower == "localhost" or hostname_lower.endswith(".localhost"):
+        raise HTTPException(status_code=400, detail=forbidden_msg)
+
+    if is_forbidden_ip(hostname_lower):
+        raise HTTPException(status_code=400, detail=forbidden_msg)
+
+    try:
+        addr_info = socket.getaddrinfo(hostname, None)
+        for _, _, _, _, sockaddr in addr_info:
+            ip_str = sockaddr[0]
+            if is_forbidden_ip(ip_str):
+                raise HTTPException(status_code=400, detail=forbidden_msg)
+    except socket.gaierror as err:
+        raise HTTPException(status_code=400, detail=f"Failed to resolve hostname '{hostname}': {err}") from err
+
+
 @app.get("/api/proxy")
 async def proxy_url(
     url: Annotated[str, Query(description="Target URL to fetch via proxy")],
 ) -> Response:
     """Proxy HTTP GET request to bypass CORS restrictions for preview."""
-    if not url or not url.startswith(("http://", "https://")):
-        raise HTTPException(status_code=400, detail="Invalid URL scheme. Must start with http:// or https://")
+    validate_proxy_url(url)
 
     try:
         async with httpx.AsyncClient(follow_redirects=True, timeout=10.0) as client:
