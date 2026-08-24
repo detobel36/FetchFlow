@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from jexflow.config.validator import SCRAPER_CONFIG_SCHEMA
 from preview.session import DebugSession
 from preview.validation import validate_scraper_json
 
@@ -45,6 +46,12 @@ class ExportConfigRequest(BaseModel):
 
     config_json: str
     filename: str | None = None
+
+
+@app.get("/api/config/schema")
+def get_config_schema() -> dict[str, Any]:
+    """Return JSON Schema for scraper configurations."""
+    return SCRAPER_CONFIG_SCHEMA
 
 
 @app.post("/api/config/validate")

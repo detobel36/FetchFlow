@@ -1,4 +1,16 @@
 let editor = null;
+let scraperSchema = null;
+
+async function fetchSchema() {
+  try {
+    const resp = await fetch("/api/config/schema");
+    if (resp.ok) {
+      scraperSchema = await resp.json();
+    }
+  } catch (err) {
+    console.warn("Could not fetch JSON schema:", err);
+  }
+}
 
 document.addEventListener("DOMContentLoaded", function () {
   let activeLineMarker = null;
@@ -137,11 +149,16 @@ document.addEventListener("DOMContentLoaded", function () {
         const methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"];
         suggestions = methods.filter(m => m.toLowerCase().startsWith(prefix.toLowerCase()));
       } else if (key === "selector_type") {
-        const types = ["css", "xpath", "jsonpath", "json"];
+        const types = scraperSchema?.definitions?.extract?.properties?.selector_type?.enum || ["css", "xpath", "jsonpath", "json"];
         suggestions = types.filter(t => t.toLowerCase().startsWith(prefix.toLowerCase()));
       } else if (key === "type") {
-        const types = ["text", "attribute"];
+        const types = scraperSchema?.definitions?.field?.oneOf?.[0]?.properties?.type?.enum || ["text", "attribute"];
         suggestions = types.filter(t => t.toLowerCase().startsWith(prefix.toLowerCase()));
+      } else if (key === "operator") {
+        const ops = scraperSchema?.definitions?.condition?.properties?.operator?.enum || [
+          "contains", "not_contains", "equals", "not_equals", "bigger_than", "smaller_than"
+        ];
+        suggestions = ops.filter(o => o.toLowerCase().startsWith(prefix.toLowerCase()));
       } else if (key === "Content-Type" || key === "Accept") {
         const mimeTypes = ["application/json", "text/html", "application/x-www-form-urlencoded", "multipart/form-data", "text/plain"];
         suggestions = mimeTypes.filter(m => m.toLowerCase().startsWith(prefix.toLowerCase()));
@@ -210,6 +227,7 @@ document.addEventListener("DOMContentLoaded", function () {
       let context = "top";
       for (let l = cur.line; l >= Math.max(0, cur.line - 30); l--) {
         const ltext = cm.getLine(l);
+        if (ltext.includes('"conditions"')) { context = "conditions"; break; }
         if (ltext.includes('"request"')) { context = "request"; break; }
         if (ltext.includes('"for_each"')) { context = "for_each"; break; }
         if (ltext.includes('"extract"')) { context = "extract"; break; }
@@ -219,15 +237,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
       let keys = [];
       if (context === "top") {
-        keys = ["name", "version", "variables", "steps"];
+        keys = scraperSchema?.properties ? Object.keys(scraperSchema.properties) : ["name", "version", "variables", "steps"];
       } else if (context === "step") {
-        keys = ["id", "parser", "for_each", "request", "extract", "fields", "conditions"];
+        keys = scraperSchema?.definitions?.step?.properties
+          ? Object.keys(scraperSchema.definitions.step.properties)
+          : ["id", "parser", "for_each", "request", "extract", "fields", "conditions"];
+      } else if (context === "conditions") {
+        keys = scraperSchema?.definitions?.condition?.properties
+          ? Object.keys(scraperSchema.definitions.condition.properties)
+          : ["field", "operator", "value"];
       } else if (context === "request") {
-        keys = ["method", "url", "response_type", "headers", "params"];
+        keys = scraperSchema?.definitions?.request?.properties
+          ? Object.keys(scraperSchema.definitions.request.properties)
+          : ["method", "url", "response_type", "headers", "params"];
       } else if (context === "for_each") {
-        keys = ["from", "field", "sub_field"];
+        keys = scraperSchema?.definitions?.for_each?.properties
+          ? Object.keys(scraperSchema.definitions.for_each.properties)
+          : ["from", "field", "sub_field"];
       } else if (context === "extract") {
-        keys = ["selector", "selector_type"];
+        keys = scraperSchema?.definitions?.extract?.properties
+          ? Object.keys(scraperSchema.definitions.extract.properties)
+          : ["selector", "selector_type"];
       } else if (context === "fields") {
         keys = ["extract", "type", "attribute", "transform", "fields"];
       }
@@ -463,8 +493,13 @@ document.addEventListener("DOMContentLoaded", function () {
         editor.setCursor({ line: valResult.syntax_error.line - 1, ch: 0 });
       }
     } else if (valResult.schema_errors && valResult.schema_errors.length > 0) {
-      alertTitle.textContent = "Configuration Error";
+      alertTitle.textContent = "Schema Validation Error";
       alertBody.textContent = valResult.schema_errors.map(e => e.message).join("\n");
+      const errLine = valResult.schema_errors[0].line;
+      if (errLine && errLine > 0) {
+        editor.setCursor({ line: errLine - 1, ch: 0 });
+        editor.scrollIntoView({ line: errLine - 1, ch: 0 }, 100);
+      }
     }
   }
 
@@ -752,6 +787,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Init
+  fetchSchema();
   initEditor();
   setupTabs();
   setupResizer();

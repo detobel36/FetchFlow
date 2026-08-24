@@ -1,9 +1,9 @@
 import json
-import re
 from typing import Any
 
-from jexflow.config.validator import ConfigValidator
-from jexflow.errors import ConfigValidationError
+import jsonschema
+
+from jexflow.config.validator import SCRAPER_CONFIG_SCHEMA
 
 
 def find_key_line_number(json_str: str, key_path: list[str | int]) -> int:
@@ -12,8 +12,11 @@ def find_key_line_number(json_str: str, key_path: list[str | int]) -> int:
         return 1
 
     lines = json_str.splitlines()
-    target_key = str(key_path[-1])
+    string_keys = [str(k) for k in key_path if isinstance(k, str)]
+    if not string_keys:
+        return 1
 
+    target_key = string_keys[-1]
     for idx, line in enumerate(lines, start=1):
         if f'"{target_key}"' in line:
             return idx
@@ -59,38 +62,24 @@ def validate_scraper_json(json_str: str) -> dict[str, Any]:
             "config": None,
         }
 
-    try:
-        ConfigValidator.validate(data)
-    except ConfigValidationError as err:
+    validator = jsonschema.Draft7Validator(SCRAPER_CONFIG_SCHEMA)
+    errors = list(validator.iter_errors(data))
+    if errors:
         schema_errors = []
-        msg = str(err)
-
-        match = re.search(r"Failed validating '([^']+)' in schema\['([^']+)'\]", msg)
-        path_str = match.group(2) if match else "config"
-
-        schema_errors.append({
-            "path": path_str,
-            "message": msg,
-            "line": 1,
-        })
+        for err in errors:
+            path_list = list(err.path)
+            path_str = ".".join(str(p) for p in path_list) if path_list else "root"
+            line = find_key_line_number(json_str, path_list)
+            schema_errors.append({
+                "path": path_str,
+                "message": f"{path_str}: {err.message}",
+                "line": line,
+            })
 
         return {
             "valid": False,
             "syntax_error": None,
             "schema_errors": schema_errors,
-            "config": data,
-        }
-    except Exception as err:  # noqa: BLE001
-        return {
-            "valid": False,
-            "syntax_error": None,
-            "schema_errors": [
-                {
-                    "path": "config",
-                    "message": f"Configuration error: {err}",
-                    "line": 1,
-                },
-            ],
             "config": data,
         }
 
