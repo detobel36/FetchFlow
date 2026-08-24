@@ -176,12 +176,70 @@ class StepExecutor:
 
         return "html"
 
+    def _fetch_csrf_token(
+        self, csrf_cfg: dict[str, Any], context: ExecutionContext,
+    ) -> str | None:
+        """Fetch CSRF token from specified URL and extract its value."""
+        tpl_ctx = context.get_template_context()
+        token_url = TemplateRenderer.render_string(csrf_cfg["url"], tpl_ctx)
+        token_method = csrf_cfg.get("method", "GET").upper()
+
+        csrf_request = HTTPRequest(
+            url=token_url,
+            method=token_method,
+        )
+        csrf_response = self.http_client.send(csrf_request)
+        doc_type = "json" if "json" in csrf_cfg.get("extract", {}).get("selector_type", "") else "html"
+        doc = get_document(csrf_response.text, doc_type)
+        default_sel_type = csrf_cfg.get("extract", {}).get("selector_type", "css")
+
+        token_val = self._extract_single_field(
+            doc,
+            {
+                "extract": csrf_cfg["extract"],
+                "type": csrf_cfg.get("type", "text"),
+                "attribute": csrf_cfg.get("attribute"),
+            },
+            default_sel_type=default_sel_type,
+        )
+
+        if isinstance(token_val, list):
+            return str(token_val[0]) if token_val else None
+        return str(token_val) if token_val is not None else None
+
+    def _apply_csrf_if_configured(
+        self, req_config: dict[str, Any], context: ExecutionContext,
+    ) -> dict[str, Any]:
+        """Fetch CSRF token if configured and inject into request headers/params."""
+        csrf_cfg = req_config.get("csrf_token")
+        if not csrf_cfg:
+            return req_config
+
+        extracted_csrf = self._fetch_csrf_token(csrf_cfg, context)
+        if not extracted_csrf:
+            return req_config
+
+        context.global_variables["csrf_token"] = extracted_csrf
+        updated_req = dict(req_config)
+
+        param_name = csrf_cfg.get("param_name")
+        if param_name:
+            params_dict = dict(updated_req.get("params", {}))
+            params_dict[param_name] = extracted_csrf
+            updated_req["params"] = params_dict
+
+        header_name = csrf_cfg.get("header_name")
+        if header_name:
+            headers_dict = dict(updated_req.get("headers", {}))
+            headers_dict[header_name] = extracted_csrf
+            updated_req["headers"] = headers_dict
+
+        return updated_req
+
     def execute_single_request_with_trace(
         self, step_config: dict[str, Any], context: ExecutionContext,
     ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         """Execute a single request for a workflow step and return trace information."""
-        tpl_ctx = context.get_template_context()
-
         req_config = step_config.get("request")
         if not req_config:
             empty_trace = {
@@ -194,6 +252,9 @@ class StepExecutor:
                 "results": [],
             }
             return [], empty_trace
+
+        req_config = self._apply_csrf_if_configured(req_config, context)
+        tpl_ctx = context.get_template_context()
 
         rendered_url = TemplateRenderer.render_string(req_config["url"], tpl_ctx)
         method = req_config.get("method", "GET").upper()
