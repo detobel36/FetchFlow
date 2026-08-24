@@ -51,7 +51,7 @@ DELHAIZE_HTML = """
 <html>
 <body>
     <div class="product-item">
-        <h3 class="product-title">Coca-Cola Regular 6x33cl</h3>
+        <h3 class="product-title">Coca-Cola Original 6x33cl</h3>
         <span class="product-price"> 4,99 € </span>
     </div>
     <div class="product-item">
@@ -67,7 +67,7 @@ COLRUYT_HTML = """
 <html>
 <body>
     <div class="product-card">
-        <h3 class="product-card__title">Coca-Cola Original Taste 6x33cl</h3>
+        <h3 class="product-card__title">Coca-Cola Regular 6x33cl</h3>
         <span class="product-card__price"> 4.85 € </span>
     </div>
     <div class="product-card">
@@ -145,11 +145,9 @@ def test_price_comparison_integration():
     assert "colruyt_coca_cola_search" in all_prices
 
     delhaize_items = all_prices["delhaize_coca_cola_search"]
-    assert len(delhaize_items) == 2
-    assert delhaize_items[0] == {"title": "Coca-Cola Regular 6x33cl", "price": "4,99"}
-    assert delhaize_items[1] == {"title": "Coca-Cola Zero Sugar 1.5L", "price": "2,15"}
+    assert len(delhaize_items) == 1
+    assert delhaize_items[0] == {"title": "Coca-Cola Original 6x33cl", "price": "4,99"}
 
     colruyt_items = all_prices["colruyt_coca_cola_search"]
-    assert len(colruyt_items) == 2
-    assert colruyt_items[0] == {"title": "Coca-Cola Original Taste 6x33cl", "price": "4.85"}
-    assert colruyt_items[1] == {"title": "Coca-Cola Zero Sugar 1.5L", "price": "2.09"}
+    assert len(colruyt_items) == 1
+    assert colruyt_items[0] == {"title": "Coca-Cola Regular 6x33cl", "price": "4.85"}

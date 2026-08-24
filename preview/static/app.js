@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (context === "top") {
         keys = ["name", "version", "variables", "steps"];
       } else if (context === "step") {
-        keys = ["id", "parser", "for_each", "request", "extract", "fields"];
+        keys = ["id", "parser", "for_each", "request", "extract", "fields", "conditions"];
       } else if (context === "request") {
         keys = ["method", "url", "response_type", "headers", "params"];
       } else if (context === "for_each") {
