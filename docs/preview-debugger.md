@@ -24,4 +24,5 @@ Access the debugger at `http://127.0.0.1:8000`.
 
 - **Real-Time Two-Panel Interface**: Edit JSON configuration on the left while previewing sandboxed HTML highlights, extracted data, HTTP request/response details, and transform pipelines in real time on the right.
 - **Configuration Management**: Import, export, format, validate, and save scraper configurations directly from the editor toolbar.
+- **Schema-Driven Validation & Autocompletion**: Integrated with `SCRAPER_CONFIG_SCHEMA` (JSON Schema Draft-07 from `jexflow/config/validator.py`) via the `/api/config/schema` endpoint. CodeMirror provides real-time schema validation with exact error line navigation and autocompletion for JSON properties, selector types, condition operators, and HTTP methods.
 - **Interactive Step Navigation**: Step forward/backward through workflow steps and `for_each` loop iterations with cached execution state.

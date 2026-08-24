@@ -10,7 +10,7 @@ A lightweight, configuration-driven web scraping engine in Python designed for l
 
 ## Features
 
-- **JSON Configuration-Driven**: Define scraping workflows, URL templates, selectors, and transformations purely in JSON.
+- **JSON Configuration-Driven**: Define scraping workflows, URL templates, selectors, and transformations purely in JSON validated by JSON Schema (`jexflow/config/validator.py`).
 - **Low Resource Usage**: Minimal dependencies (`httpx`, `lxml`, `jsonschema`, `cssselect`). No browser automation required by default.
 - **Unified Extractors**: Supports CSS selectors and XPath for HTML parsing, as well as JSONPath for REST JSON APIs. Extensible for future document formats.
 - **Flexible Transformations**: Composable transformations (`trim`, `lower`, `upper`, `replace`, `split`, `regex`).
@@ -21,7 +21,7 @@ A lightweight, configuration-driven web scraping engine in Python designed for l
 Full feature documentation, JSON schema guides, and examples are available in the [Documentation Wiki](docs/INDEX.md):
 
 - [Getting Started](docs/getting-started.md)
-- [Configuration Structure](docs/configuration-structure.md)
+- [Configuration Structure & JSON Schema](docs/configuration-structure.md)
 - [HTTP Requests](docs/requests.md)
 - [Extraction & Selectors](docs/extraction-and-selectors.md)
 - [Transformations](docs/transformations.md)

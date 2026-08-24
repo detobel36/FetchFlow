@@ -66,6 +66,35 @@ classDiagram
 
 ---
 
+## JSON Schema & Validation
+
+All Jexflow configurations strictly adhere to a **JSON Schema Draft-07** definition located at [`jexflow/config/validator.py`](../jexflow/config/validator.py) as `SCRAPER_CONFIG_SCHEMA`.
+
+### Programmatic Validation
+
+Configuration loading and validation are handled by `ConfigValidator` and `ConfigLoader`:
+
+```python
+from jexflow.config import ConfigLoader, ConfigValidator
+
+# Validate raw configuration dictionary
+ConfigValidator.validate(config_dict)
+
+# Or load directly from JSON string or file with built-in schema validation
+config = ConfigLoader.load_from_json(json_str)
+config = ConfigLoader.load_from_file("path/to/config.json")
+```
+
+If validation fails, a `ConfigValidationError` is raised detailing all mismatched properties and line paths.
+
+### Key Schema Constraints
+
+1. **Strict Extractions**: Field extraction definitions require selector properties (`selector`, `selector_type`) to be nested inside an `extract` object for both leaf and nested fields.
+2. **Condition Operators**: Step conditions use snake_case operators (`contains`, `not_contains`, `equals`, `not_equals`, `bigger_than`, `smaller_than`).
+3. **Selector Types**: Supported selector types are strictly restricted to `"css"`, `"xpath"`, `"jsonpath"`, and `"json"`.
+
+---
+
 ## Complete JSON Configuration Example
 
 ```json

@@ -8,8 +8,9 @@ Welcome to the **Jexflow** wiki! Jexflow is a lightweight, configuration-driven 
    - Installation and dependencies (`requirements.txt`)
    - CLI usage for testing and execution
    - Basic usage in Python code
-2. [Configuration Structure](configuration-structure.md)
-   - Top-level JSON schema (`name`, `version`, `variables`, `steps`)
+2. [Configuration Structure & JSON Schema](configuration-structure.md)
+   - JSON Schema Draft-07 specification (`jexflow/config/validator.py`)
+   - Top-level structure (`name`, `version`, `variables`, `steps`)
    - Step definitions and execution flow
 3. [HTTP Requests](requests.md)
    - Defining HTTP requests (`method`, `url`, `headers`, `params`)

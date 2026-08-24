@@ -182,6 +182,15 @@ def test_debug_session_navigation_and_caching():
     assert request_count > req_count_before_prev
 
 
+def test_fastapi_schema_endpoint():
+    test_client = TestClient(app)
+    r_schema = test_client.get("/api/config/schema")
+    assert r_schema.status_code == 200
+    schema_data = r_schema.json()
+    assert schema_data.get("title") == "ScraperConfig"
+    assert "steps" in schema_data.get("required", [])
+
+
 def test_fastapi_preview_endpoints():
     test_client = TestClient(app)
 
