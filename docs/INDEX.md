@@ -15,6 +15,7 @@ Welcome to the **Jexflow** wiki! Jexflow is a lightweight, configuration-driven 
 3. [HTTP Requests](requests.md)
    - Defining HTTP requests (`method`, `url`, `headers`, `params`)
    - Dynamic template placeholders (`{{variable_name}}`)
+   - [CSRF Token Verification & Bypass Guide](csrf-verification.md)
 4. [Extraction and Selectors](extraction-and-selectors.md)
    - Container extraction (`extract`)
    - Field extraction (`fields`)
