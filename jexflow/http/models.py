@@ -13,6 +13,7 @@ class HTTPRequest:
     headers: dict[str, str] = field(default_factory=dict)
     params: dict[str, str] = field(default_factory=dict)
     body: Any | None = None
+    timeout: float | None = None
 
 
 @dataclass

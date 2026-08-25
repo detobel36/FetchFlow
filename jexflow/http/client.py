@@ -67,6 +67,8 @@ class HTTPXClient(HTTPClient):
             }
             if request.params:
                 kwargs["params"] = request.params
+            if request.timeout is not None:
+                kwargs["timeout"] = request.timeout
 
             res = self._client.request(**kwargs)
             response = HTTPResponse(
