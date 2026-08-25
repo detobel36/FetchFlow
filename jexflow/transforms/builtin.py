@@ -1,5 +1,7 @@
+import base64
+import html
 import re
-from urllib.parse import quote
+from urllib.parse import parse_qs, quote, unquote, urljoin, urlparse
 
 from jexflow.errors import TransformationError
 from jexflow.transforms.base import BaseTransformer
@@ -120,3 +122,121 @@ class RegexTransformer(BaseTransformer):
             return ["".join(m) for m in matches]
 
         return matches
+
+
+class URLJoinTransformer(BaseTransformer):
+    """Joins a base URL with a relative URL string."""
+
+    def __init__(self, base: str = "") -> None:
+        """Init.
+
+        Args:
+            base: The base URL to join with.
+        """
+        self.base = base
+
+    def transform_single(self, value: str) -> str:
+        """Join base URL and relative URL value."""
+        return urljoin(self.base, value)
+
+
+class URLDecodeTransformer(BaseTransformer):
+    """Decodes a URL-encoded string."""
+
+    def transform_single(self, value: str) -> str:
+        """URL decode string."""
+        return unquote(value)
+
+
+class ParseURLTransformer(BaseTransformer):
+    """Parses a URL string and returns a specific URL component or string representation.
+
+    Component options: 'scheme', 'netloc', 'path', 'params', 'query', 'fragment'.
+    If component is None or empty, returns str(urlparse(value)).
+    """
+
+    def __init__(self, component: str | None = None) -> None:
+        """Init.
+
+        Args:
+            component: Specific component to extract (e.g., 'scheme', 'netloc', 'path', 'query').
+        """
+        self.component = component
+
+    def transform_single(self, value: str) -> str:
+        """Parse URL string."""
+        parsed = urlparse(value)
+        if self.component:
+            return getattr(parsed, self.component, "")
+        return str(parsed)
+
+
+class QueryParamTransformer(BaseTransformer):
+    """Extracts the value of a specific query parameter from a URL or query string."""
+
+    def __init__(self, param: str = "") -> None:
+        """Init.
+
+        Args:
+            param: Name of the query parameter to extract.
+        """
+        self.param = param
+
+    def transform_single(self, value: str) -> str | list[str]:
+        """Extract query parameter value."""
+        if not self.param:
+            return ""
+
+        # If full URL, parse query part, else parse value directly
+        query_str = urlparse(value).query if "://" in value or "?" in value else value
+        parsed = parse_qs(query_str)
+        vals = parsed.get(self.param)
+        if not vals:
+            return ""
+        if len(vals) == 1:
+            return vals[0]
+        return vals
+
+
+class Base64EncodeTransformer(BaseTransformer):
+    """Encodes a string to Base64."""
+
+    def transform_single(self, value: str) -> str:
+        """Base64 encode string."""
+        return base64.b64encode(value.encode("utf-8")).decode("utf-8")
+
+
+class Base64DecodeTransformer(BaseTransformer):
+    """Decodes a Base64-encoded string."""
+
+    def transform_single(self, value: str) -> str:
+        """Base64 decode string."""
+        try:
+            return base64.b64decode(value.encode("utf-8")).decode("utf-8")
+        except Exception as e:
+            msg = f"Failed to base64 decode '{value}': {e}"
+            raise TransformationError(msg) from e
+
+
+class HTMLDecodeTransformer(BaseTransformer):
+    """Decodes HTML entities (e.g. &amp;, &lt;) in a string."""
+
+    def transform_single(self, value: str) -> str:
+        """HTML decode string."""
+        return html.unescape(value)
+
+
+class HTMLEncodeTransformer(BaseTransformer):
+    """Encodes special characters in a string to HTML entities."""
+
+    def __init__(self, quote_char: bool = True) -> None:  # noqa: FBT001, FBT002
+        """Init.
+
+        Args:
+            quote_char: Whether to encode quote characters.
+        """
+        self.quote = quote_char
+
+    def transform_single(self, value: str) -> str:
+        """HTML encode string."""
+        return html.escape(value, quote=self.quote)
