@@ -3,14 +3,22 @@ from typing import Any, ClassVar
 from jexflow.errors import TransformationError
 from jexflow.transforms.base import BaseTransformer
 from jexflow.transforms.builtin import (
+    Base64DecodeTransformer,
+    Base64EncodeTransformer,
+    HTMLDecodeTransformer,
+    HTMLEncodeTransformer,
     LowerTransformer,
+    ParseURLTransformer,
+    QueryParamTransformer,
     RegexTransformer,
     ReplaceTransformer,
     SpaceToDashTransformer,
     SplitTransformer,
     TrimTransformer,
     UpperTransformer,
+    URLDecodeTransformer,
     URLEncodeTransformer,
+    URLJoinTransformer,
 )
 
 
@@ -61,11 +69,15 @@ class TransformerRegistry:
 
         if isinstance(value, (str, int, float)):
             # E.g. {"split": ","} or {"regex": "pattern"}
-            if name == "split":
-                return {"delimiter": str(value)}
-            if name == "regex":
-                return {"pattern": str(value)}
-            return {"value": str(value)}
+            arg_map = {
+                "split": "delimiter",
+                "regex": "pattern",
+                "urljoin": "base",
+                "parse_url": "component",
+                "query_param": "param",
+            }
+            key = arg_map.get(name, "value")
+            return {key: str(value)}
 
         return {}
 
@@ -127,6 +139,14 @@ TransformerRegistry.register("trim", TrimTransformer)
 TransformerRegistry.register("lower", LowerTransformer)
 TransformerRegistry.register("upper", UpperTransformer)
 TransformerRegistry.register("url_encode", URLEncodeTransformer)
+TransformerRegistry.register("url_decode", URLDecodeTransformer)
+TransformerRegistry.register("urljoin", URLJoinTransformer)
+TransformerRegistry.register("parse_url", ParseURLTransformer)
+TransformerRegistry.register("query_param", QueryParamTransformer)
+TransformerRegistry.register("base64_encode", Base64EncodeTransformer)
+TransformerRegistry.register("base64_decode", Base64DecodeTransformer)
+TransformerRegistry.register("html_decode", HTMLDecodeTransformer)
+TransformerRegistry.register("html_encode", HTMLEncodeTransformer)
 TransformerRegistry.register("space_to_dash", SpaceToDashTransformer)
 TransformerRegistry.register("replace", ReplaceTransformer)
 TransformerRegistry.register("split", SplitTransformer)
