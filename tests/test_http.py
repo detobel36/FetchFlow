@@ -34,3 +34,23 @@ def test_httpx_client_error():
         client.send(req)
 
     assert exc_info.value.status_code == 404
+
+
+def test_httpx_client_per_request_timeout():
+    passed_timeout = []
+
+    def mock_handler(request: httpx.Request):
+        # httpx Request extensions contain timeout if specified
+        passed_timeout.append(request.extensions.get("timeout"))
+        return httpx.Response(200, text="OK", request=request)
+
+    transport = httpx.MockTransport(mock_handler)
+    raw_client = httpx.Client(transport=transport)
+    client = HTTPXClient(client=raw_client)
+
+    req = HTTPRequest(url="https://example.com", timeout=5.0)
+    res = client.send(req)
+    assert res.status_code == 200
+    assert len(passed_timeout) == 1
+    assert passed_timeout[0] is not None
+    assert passed_timeout[0].get("connect") == 5.0

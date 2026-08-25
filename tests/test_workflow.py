@@ -453,3 +453,114 @@ def test_workflow_positional_selector():
         "css_third": "Bronze Medal",
         "xpath_third": "Bronze Medal",
     }
+
+
+def test_workflow_retries_and_retry_delay(monkeypatch):
+    calls = []
+    slept = []
+
+    def mock_sleep(seconds):
+        slept.append(seconds)
+
+    monkeypatch.setattr("time.sleep", mock_sleep)
+
+    def mock_handler(request: httpx.Request):
+        calls.append(request)
+        if len(calls) < 3:
+            return httpx.Response(500, text="Internal Error", request=request)
+        return httpx.Response(200, text="<div>Success</div>", request=request)
+
+    transport = httpx.MockTransport(mock_handler)
+    http_client = httpx.Client(transport=transport)
+
+    config = {
+        "name": "retry_test",
+        "steps": [
+            {
+                "id": "fetch",
+                "request": {
+                    "method": "GET",
+                    "url": "https://example.com/retry",
+                    "retries": 3,
+                    "retry_delay": 0.5,
+                },
+                "fields": {
+                    "val": {
+                        "extract": {"selector": "div"},
+                        "type": "text",
+                    },
+                },
+            },
+        ],
+    }
+
+    ConfigValidator.validate(config)
+
+    from jexflow.http import HTTPXClient
+
+    client_wrapper = HTTPXClient(client=http_client)
+    scraper = Scraper(config=config, http_client=client_wrapper)
+    results = scraper.run()
+
+    assert len(results) == 1
+    assert results[0]["val"] == "Success"
+    assert len(calls) == 3
+    assert slept == [0.5, 0.5]
+
+
+def test_workflow_for_each_loop_delay(monkeypatch):
+    slept = []
+
+    def mock_sleep(seconds):
+        slept.append(seconds)
+
+    monkeypatch.setattr("time.sleep", mock_sleep)
+
+    def mock_handler(request: httpx.Request):
+        return httpx.Response(200, text="<div>Item Page</div>", request=request)
+
+    transport = httpx.MockTransport(mock_handler)
+    http_client = httpx.Client(transport=transport)
+
+    config = {
+        "name": "loop_delay_test",
+        "steps": [
+            {
+                "id": "step1",
+                "request": {
+                    "url": "https://example.com/step1",
+                },
+                "extract": {"selector": "div"},
+                "fields": {
+                    "id": {"extract": {"selector": "div"}, "type": "text"},
+                },
+            },
+            {
+                "id": "step2",
+                "for_each": {
+                    "from": "step1",
+                    "delay": 1.5,
+                },
+                "request": {
+                    "url": "https://example.com/step2?item={{id}}",
+                },
+            },
+        ],
+    }
+
+    # Simulate step1 having 3 items
+    from jexflow.http import HTTPXClient
+    from jexflow.workflow.context import ExecutionContext
+    from jexflow.workflow.engine import WorkflowEngine
+
+    ConfigValidator.validate(config)
+    client_wrapper = HTTPXClient(client=http_client)
+    engine = WorkflowEngine(client_wrapper)
+
+    ctx = ExecutionContext()
+    ctx.set_step_result("step1", [{"id": "a"}, {"id": "b"}, {"id": "c"}])
+
+    results = engine.step_executor.execute(config["steps"][1], ctx)
+    assert len(results) == 3
+    # Slept twice: before iteration 2 and iteration 3
+    assert slept == [1.5, 1.5]

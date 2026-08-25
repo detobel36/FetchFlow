@@ -176,6 +176,43 @@ class StepExecutor:
 
         return "html"
 
+    def _execute_http_request_with_retry(
+        self, req_config: dict[str, Any], tpl_ctx: dict[str, Any],
+    ) -> tuple[HTTPRequest, Any, float]:
+        """Execute HTTP request with optional per-request timeout and retry parameters."""
+        rendered_url = TemplateRenderer.render_string(req_config["url"], tpl_ctx)
+        method = req_config.get("method", "GET").upper()
+        headers = TemplateRenderer.render_data(req_config.get("headers", {}), tpl_ctx)
+        params = TemplateRenderer.render_data(req_config.get("params", {}), tpl_ctx)
+        timeout = req_config.get("timeout")
+        retries = req_config.get("retries", req_config.get("retry", 0))
+        retry_delay = req_config.get("retry_delay", 0)
+
+        request = HTTPRequest(
+            url=rendered_url,
+            method=method,
+            headers=headers,
+            params=params,
+            timeout=float(timeout) if timeout is not None else None,
+        )
+
+        start_time = time.perf_counter()
+        attempts = 0
+        response = None
+        while True:
+            try:
+                response = self.http_client.send(request)
+                break
+            except Exception:
+                attempts += 1
+                if attempts > retries:
+                    raise
+                if retry_delay > 0:
+                    time.sleep(retry_delay)
+
+        duration_ms = (time.perf_counter() - start_time) * 1000.0
+        return request, response, duration_ms
+
     def execute_single_request_with_trace(
         self, step_config: dict[str, Any], context: ExecutionContext,
     ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
@@ -195,21 +232,11 @@ class StepExecutor:
             }
             return [], empty_trace
 
-        rendered_url = TemplateRenderer.render_string(req_config["url"], tpl_ctx)
-        method = req_config.get("method", "GET").upper()
-        headers = TemplateRenderer.render_data(req_config.get("headers", {}), tpl_ctx)
-        params = TemplateRenderer.render_data(req_config.get("params", {}), tpl_ctx)
-
-        request = HTTPRequest(
-            url=rendered_url,
-            method=method,
-            headers=headers,
-            params=params,
-        )
-
-        start_time = time.perf_counter()
-        response = self.http_client.send(request)
-        duration_ms = (time.perf_counter() - start_time) * 1000.0
+        request, response, duration_ms = self._execute_http_request_with_retry(req_config, tpl_ctx)
+        rendered_url = request.url
+        method = request.method
+        headers = request.headers
+        params = request.params
 
         resp_headers = getattr(response, "headers", {})
         if hasattr(resp_headers, "items"):
@@ -364,8 +391,12 @@ class StepExecutor:
         step_results: list[dict[str, Any]] = []
         traces: list[dict[str, Any]] = []
         total_iters = len(sub_item_pairs)
+        loop_delay = for_each_cfg.get("delay", 0)
 
         for idx, (item, sub_item) in enumerate(sub_item_pairs):
+            if idx > 0 and loop_delay > 0:
+                time.sleep(loop_delay)
+
             res_list, trace = self._execute_for_each_sub_item_with_trace(
                 step_config, context, item, sub_item, sub_field,
             )
