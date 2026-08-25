@@ -18,9 +18,9 @@ Transformations are configured as an ordered array of transformer keywords or pa
   - *Example:* `"Hello World"` &rarr; `"hello world"`
 - **`upper`**: Converts text to uppercase.
   - *Example:* `"hello world"` &rarr; `"HELLO WORLD"`
-- **`url_encode`** / **`urlencode`**: Encodes text for inclusion in URLs.
+- **`url_encode`**: Encodes text for inclusion in URLs.
   - *Example:* `"hello world & foo=bar"` &rarr; `"hello%20world%20%26%20foo%3Dbar"`
-- **`urldecode`**: Decodes URL-encoded text.
+- **`url_decode`**: Decodes URL-encoded text.
   - *Example:* `"hello%20world"` &rarr; `"hello world"`
 - **`base64_encode`**: Encodes string into Base64 format.
   - *Example:* `"hello"` &rarr; `"aGVsbG8="`

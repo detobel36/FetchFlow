@@ -40,17 +40,11 @@ def test_url_encode():
     )
     assert res == ["hello%20world%20%26%20foo%3Dbar"]
 
-    res_alias = TransformerRegistry.apply_pipeline(
-        ["hello world & foo=bar"],
-        ["urlencode"],
-    )
-    assert res_alias == ["hello%20world%20%26%20foo%3Dbar"]
-
 
 def test_url_decode():
     res = TransformerRegistry.apply_pipeline(
         ["hello%20world%20%26%20foo%3Dbar"],
-        ["urldecode"],
+        ["url_decode"],
     )
     assert res == ["hello world & foo=bar"]
 
